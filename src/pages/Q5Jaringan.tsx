@@ -20,11 +20,11 @@ type SortKey = "code" | "grade" | "hari_valid_%" | "imputasi_%" | "baris_sensor_
 
 /** shortcut: salinan Tabel 3.5 laporan (laporan/build_docx.py); ubah keduanya bersamaan. */
 const PRIO = [
-  { w: "Kalimantan Selatan & Timur", why: "Pulau paling pekat (55,9 µg/m³), tapi Banjarbaru grade D dan Samarinda grade C.", act: "Ganti/kalibrasi sensor, tambah titik gambut Kalsel" },
-  { w: "Koridor gambut Kalimantan Tengah", why: "Memburuk +295%, tapi dua dari tiga stasiun memberi deret yang sama.", act: "Pindah satu unit kembar setelah verifikasi lapangan" },
-  { w: "Muaro Jambi", why: "JMB-02 rusak (0,5% data) dan hanya 0,87 km dari JMB-01.", act: "Pasang ulang di gambut Mestong" },
-  { w: "Papua Selatan", why: "Merauke hanya 1% hari valid: satu provinsi tanpa data sah.", act: "Pulihkan MER-01" },
-  { w: "Sumatra Barat & Riau", why: "Kototabang (latar bersih) ikut naik 89% saat musim asap.", act: "Titik antara di jalur sebaran asap" },
+  { w: "Kalimantan Selatan & Timur", st: ["BJB-01", "SM2-01"], why: "Pulau paling pekat (55,9 µg/m³), tapi Banjarbaru grade D dan Samarinda grade C.", act: "Ganti/kalibrasi sensor, tambah titik gambut Kalsel" },
+  { w: "Koridor gambut Kalimantan Tengah", st: ["KTG-01", "KTG-02"], why: "Memburuk +295%, tapi dua dari tiga stasiun memberi deret yang sama.", act: "Pindah satu unit kembar setelah verifikasi lapangan" },
+  { w: "Muaro Jambi", st: ["JMB-02"], why: "JMB-02 rusak (0,5% data) dan hanya 0,87 km dari JMB-01.", act: "Pasang ulang di gambut Mestong" },
+  { w: "Papua Selatan", st: ["MER-01"], why: "Merauke hanya 1% hari valid: satu provinsi tanpa data sah.", act: "Pulihkan MER-01" },
+  { w: "Sumatra Barat & Riau", st: ["KTB-01"], why: "Kototabang (latar bersih) ikut naik 89% pada Juli–14 Oktober 2026 dibanding periode sama 2024.", act: "Titik antara di jalur sebaran asap" },
 ];
 
 export default function Q5Jaringan() {
@@ -108,11 +108,13 @@ export default function Q5Jaringan() {
             {PRIO.map((r, k) => (
               <li key={r.w}>
                 <span className="n">{k + 1}</span>
-                <div><b>{r.w}</b><p>{r.why}</p></div>
+                <div><b>{r.w}</b> <small className="prio-st">{r.st.map((c) => `${byCode[c]?.nama ?? c} · ${c}`).join(", ")}</small><p>{r.why}</p></div>
                 <span className="act">{r.act}</span>
               </li>
             ))}
           </ol>
+          {/* REVISI_FINAL bagian H, opsi (a) */}
+          <p className="note prio-note">Talang Betutu (Sumatera Selatan) tidak masuk daftar karena sudah punya stasiun dengan data cukup (grade {byCode["PLB-01"]?.grade}). Yang dibutuhkan di sana perawatan sensor untuk menekan jam yang diinterpolasi, bukan titik baru.</p>
         </Card>
       }
       method="Grade: A ≥95% hari valid & imputasi <5% · B ≥90% · C ≥75% · D ≥25% · E <25%. 'Tersembunyi' = status Active tapi grade C–E atau ada sensor beku. Skor risiko = gabungan rata-rata, persentil 95, dan tren PM2.5. Anomali dari Isolation Forest per stasiun."

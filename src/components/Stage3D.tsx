@@ -7,6 +7,7 @@ import { ispuCat, ISPU_LAB, PICK_COL } from "../lib/theme";
 import { fmt, UG } from "../lib/format";
 
 
+
 /**
  * Panggung 3D: daratan Indonesia + satu tiang cahaya per stasiun.
  * Tinggi tiang = PM2.5, warna = kategori ISPU. Satu komponen dipakai semua halaman; tiap halaman
@@ -17,7 +18,7 @@ type RGB = [number, number, number];
 const hex = (h: string): RGB => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 /** ISPU di atas latar gelap: "Berbahaya" (hitam resmi) diganti merah marun supaya tetap terlihat; legenda ikut warna ini. */
 export const ISPU_3D: RGB[] = [hex("#3ccf6e"), hex("#4b8df8"), hex("#f6c945"), hex("#f0483e"), hex("#a0164f")];
-const NA: RGB = [86, 104, 116];
+const NA: RGB = [176, 188, 196]; // abu-abu terang: harus kontras dengan daratan [34, 66, 82]
 
 export const VIEWS: Record<string, MapViewState> = {
   nasional: { longitude: 110.6, latitude: -0.9, zoom: 4.15, pitch: 55, bearing: -10 },
@@ -58,6 +59,8 @@ type Props = {
   cap?: number | null;
   /** Kode yang diberi label nama di atas tiang (default: stasiun pilihan). */
   labels?: string[];
+  /** Atur label stasiun yang berdekatan: a "end" = teks di kiri tiang, "start" = di kanan; dy = geser ke bawah (px). */
+  arah?: Record<string, { a?: "start" | "end"; dy?: number }>;
   autoRotate?: boolean;
   fallback?: React.ReactNode;
   caption?: React.ReactNode;
@@ -68,7 +71,7 @@ const ELEV = 4200; // meter per µg/m³
 // sehingga transisi tinggi tiang dimulai ulang dari nol terus dan tiang tidak pernah naik.
 const ALL = () => true;
 
-export default function Stage3D({ values, view = "nasional", visible = ALL, height = 460, cap = null, labels, autoRotate = false, fallback, caption }: Props) {
+export default function Stage3D({ values, view = "nasional", visible = ALL, height = 460, cap = null, labels, arah, autoRotate = false, fallback, caption }: Props) {
   const { stations, pilihan, openProfil } = useApp();
   const [geo, setGeo] = useState<unknown>(null);
   const [ok] = useState(webglOk);
@@ -135,7 +138,7 @@ export default function Stage3D({ values, view = "nasional", visible = ALL, heig
   const rise = { duration: reduced() ? 0 : 1500, easing: ease };
   const capped = (v: number | null) => (v == null ? 0 : cap != null ? Math.min(v, cap) : v);
   const colFor = (d: D): [number, number, number, number] => {
-    if (!d.shown || d.v == null) return [...NA, 90];
+    if (!d.shown || d.v == null) return [...NA, 240]; // poin 12: tiang tidak andal harus tetap terlihat
     return [...ISPU_3D[ispuCat(capped(d.v))], 245];
   };
 
@@ -165,7 +168,7 @@ export default function Stage3D({ values, view = "nasional", visible = ALL, heig
       id: "tiang", data, diskResolution: 24, radius: 21000, extruded: true, pickable: true, autoHighlight: true,
       highlightColor: [255, 255, 255, 90],
       getPosition: (d) => [d.s.lon, d.s.lat, 9000],
-      getElevation: (d) => (d.shown ? capped(d.v) : 4) * ELEV * grow,
+      getElevation: (d) => (d.shown ? capped(d.v) : 12) * ELEV * grow,
       getFillColor: colFor,
       material: { ambient: 0.55, diffuse: 0.55, shininess: 40, specularColor: [255, 255, 255] },
       transitions: { getElevation: rise, getFillColor: { duration: 500 } },
@@ -180,11 +183,18 @@ export default function Stage3D({ values, view = "nasional", visible = ALL, heig
     new TextLayer<D>({
       id: "nama", data: named,
       getPosition: (d) => [d.s.lon, d.s.lat, 9000 + capped(d.v) * ELEV * grow + 30000],
-      getText: (d) => `${d.s.nama}${d.v != null ? ` · ${fmt(d.v, 0)}` : ""}`,
+      // grade C/D ikut ditulis supaya label tidak terbaca setara dengan stasiun yang datanya andal
+      getText: (d) => `${d.s.nama}${d.s.grade === "C" || d.s.grade === "D" ? ` (grade ${d.s.grade})` : ""}${d.v != null ? ` · ${fmt(d.v, 0)}` : ""}`,
       getSize: 13, getColor: [240, 246, 248, 255], fontWeight: 600, fontFamily: "Plus Jakarta Sans Variable, system-ui, sans-serif",
       background: true, getBackgroundColor: [10, 24, 34, 200], backgroundPadding: [6, 3],
-      characterSet: "auto", billboard: true, getTextAnchor: "middle", getAlignmentBaseline: "bottom",
-      updateTriggers: { getPosition: [grow, values, cap] },
+      characterSet: "auto",
+      // SDF: atlas biasa deck.gl 9.3 memotong huruf yang menjorok ke kiri (mis. "j" pada Banjarbaru)
+      fontSettings: { sdf: true, fontSize: 64, buffer: 6, radius: 12 },
+      billboard: true, getTextAnchor: (d) => arah?.[d.s.code]?.a ?? "middle", getAlignmentBaseline: "bottom",
+      getPixelOffset: (d) => [0, arah?.[d.s.code]?.dy ?? 0],
+      updateTriggers: { getPosition: [grow, values, cap], getTextAnchor: [JSON.stringify(arah ?? {})], getPixelOffset: [JSON.stringify(arah ?? {})] },
+      // label selalu digambar di atas tiang lain supaya tidak terpotong
+      parameters: { depthCompare: "always", depthWriteEnabled: false },
     }),
   ].filter(Boolean);
 

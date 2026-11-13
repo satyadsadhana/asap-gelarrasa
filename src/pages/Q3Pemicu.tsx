@@ -97,9 +97,9 @@ export default function Q3Pemicu() {
           <Chart option={decOpt} height={170} />
         </Card>
       }
-      method={`Dekomposisi varians bertingkat: stasiun → bulan → hari. Kontribusi faktor dari LightGBM + SHAP pada simpangan log PM2.5 dari rata-rata stasiunnya sendiri; dilatih 2024–2025, diuji 2026 (R² ${fmt(shap.r2_uji_2026, 2)}). Lalu lintas dan jarak ke jalan saling terkait (ρ = ${fmt(tr.rho_lalu_lintas_jarak, 2)}), jadi dibaca sebagai satu faktor paparan jalan raya. Korelasi cuaca per jam: median |ρ| ≤ 0,12.`}
+      method={`Dekomposisi varians bertingkat: stasiun → bulan → hari. Kontribusi faktor dari LightGBM + SHAP pada simpangan log PM2.5 dari rata-rata stasiunnya sendiri; dilatih 2024–2025, diuji 2026 (R² ${fmt(shap.r2_uji_2026, 2)}). Lalu lintas dan jarak ke jalan saling terkait (ρ = ${fmt(tr.rho_lalu_lintas_jarak, 2)}), jadi dibaca sebagai satu faktor paparan jalan raya. Korelasi cuaca per jam: median |ρ| ≤ 0,12. Dua metode berbeda dan tidak dijumlahkan: 82/16/2 membagi variasi data (skala log: lokasi 59%), sedangkan porsi cuaca ±14% adalah kepentingan fitur pada model di dalam satu stasiun.`}
       supports={[
-        <Card key="a" title="Faktor di dalam Satu Stasiun" sub="% kontribusi (SHAP)">
+        <Card key="a" title="Faktor di dalam Satu Stasiun" sub="% kontribusi menurut model (SHAP). Metodenya berbeda dari 82/16/2 di atas, jadi angkanya tidak dibandingkan langsung.">
           <Chart option={shapOpt} height={250} />
         </Card>,
         <Card key="b" title="Makin Ramai Jalan, Makin Kotor" sub="Jan–Jun · satu titik = satu stasiun · besar = dekat jalan">

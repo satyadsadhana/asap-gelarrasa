@@ -429,14 +429,16 @@ main > *:nth-child(2) { animation-delay: .06s; } main > *:nth-child(3) { animati
   .page-stage .stage-legend { display: none; }
 }
 .prio { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 8px; }
-.prio li { display: grid; grid-template-columns: 30px minmax(0, 1fr) minmax(0, 260px); gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); transition: transform .2s; }
+.prio li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 6px 12px; align-items: start; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); transition: transform .2s; }
 .prio li:hover { transform: translateX(3px); }
 .prio .n { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--forest); color: #fff; font-weight: 700; }
 .prio li:first-child .n { background: #2ec4b6; color: #062026; }
 .prio b { font-size: 14.5px; }
 .prio p { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
-.prio .act { font-size: 12.5px; font-weight: 600; color: var(--forest-2); }
-@media (max-width: 720px) { .prio li { grid-template-columns: 30px 1fr; } .prio .act { grid-column: 2; } }
+.prio .act { grid-column: 2; justify-self: start; font-size: 12.5px; font-weight: 600; color: var(--forest-2); background: var(--surface, #fff); border-left: 3px solid var(--forest-2); border-radius: 6px; padding: 5px 10px; }
+.prio .act::before { content: "Aksi: "; font-weight: 700; }
+.prio-st { font-size: 12px; color: var(--ink-soft); }
+.prio-note { margin-top: 10px; font-size: 12.5px; }
 .recs-wrap { margin-top: 22px; }
 .recs-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .recs-list details { background: var(--surface); border-radius: 14px; box-shadow: 0 1px 2px rgba(13,26,34,.04), 0 8px 24px rgba(13,26,34,.06); transition: box-shadow .2s; }

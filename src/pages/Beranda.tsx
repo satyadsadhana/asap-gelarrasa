@@ -4,7 +4,7 @@ import StationMap from "../components/StationMap";
 import Stage3D from "../components/Stage3D";
 import NavIcon from "../components/NavIcon";
 import { Kpi, PAGES } from "../components/Layout";
-import { BarsViz, Count, DotsViz, Flow, PillarsViz, Reveal, RulerViz, Waffle } from "../components/Viz";
+import { BarsViz, Count, DotsViz, Flow, InfoTip, PillarsViz, Reveal, RulerViz, Waffle } from "../components/Viz";
 import { useTour } from "../components/Tour";
 import { useData } from "../lib/data";
 import { fmt, fmtDate, fmtPct, UG } from "../lib/format";
@@ -135,15 +135,15 @@ export default function Beranda() {
         <p>Mengikuti filter di kanan atas: {scope}.</p>
       </div>
       <Flow label="Empat angka utama">
-        <Kpi k="Rata-rata PM2.5 Harian" v={<Count to={stats.mean} d={1} />} unit={UG}
+        <Kpi k={<>Rata-rata PM2.5 Harian <InfoTip title="Apa Itu PM2.5?">PM2.5: debu dan asap halus berukuran 2,5 mikrometer atau lebih kecil, cukup kecil untuk terhirup sampai ke paru-paru. Sumber utamanya kendaraan, industri, serta kebakaran hutan dan lahan. µg/m³ (mikrogram per meter kubik): berat partikel dalam satu meter kubik udara. 1 µg = sepersejuta gram.</InfoTip></>} v={<Count to={stats.mean} d={1} />} unit={UG}
           viz={<RulerViz value={stats.mean ?? 0} max={Math.max(60, (stats.mean ?? 0) * 1.25)} marks={[{ v: 5, l: "WHO 5" }, { v: 15, l: "Nasional 15" }]} />}
           note={`Garis = batas rata-rata tahunan. Angka ini ${fmt((stats.mean ?? 0) / 15, 1)} kali batas nasional.`} />
         <Kpi k="Hari Melewati Baku Mutu Harian" v={<>1 dari <Count to={oneIn} /></>} unit="hari"
           viz={<DotsViz n={1} total={oneIn} tone="alert" />}
           note={`${fmt(stats.pct55, 1)}% hari-stasiun punya PM2.5 di atas 55 ${UG}.`} />
-        <Kpi k="Hari Sangat Tidak Sehat" v={<Count to={stats.over150} />} unit="hari"
+        <Kpi k="Hari-Stasiun Sangat Tidak Sehat" v={<Count to={stats.over150} />} unit="hari-stasiun"
           viz={<BarsViz values={["2024", "2025", "2026"].map((y) => stats.perYear[y])} labels={["2024", "2025", "2026*"]} tone="gambut" />}
-          note={`Dijumlah dari semua stasiun, PM2.5 di atas 150 ${UG}. *2026 baru sampai 14 Oktober.`} />
+          note={`Satu stasiun pada satu hari dihitung satu, PM2.5 harian di atas 150,4 ${UG}. *2026 baru sampai 14 Oktober.`} />
         <Kpi k="Stasiun Terpekat dan Terbersih"
           v={stats.top ? <button className="link-btn big" onClick={() => openProfil(stats.top.code)}>{byCode[stats.top.code].nama}</button> : "–"}
           viz={stats.top && stats.low ? <PillarsViz items={[{ l: byCode[stats.top.code].nama, v: stats.top.mean }, { l: byCode[stats.low.code].nama, v: stats.low.mean }]} /> : null}

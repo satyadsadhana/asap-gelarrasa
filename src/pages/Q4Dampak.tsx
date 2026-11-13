@@ -113,20 +113,20 @@ export default function Q4Dampak() {
   const tsOpt: EChartsOption = {
     tooltip: { trigger: "axis", axisPointer: { type: "line" }, valueFormatter: (v: any) => (v == null ? "–" : fmt(v, 2)) },
     axisPointer: { link: [{ xAxisIndex: "all" }] },
-    legend: { top: 0, data: wk.rows.map((r) => byCode[r.c].nama) },
-    grid: [{ left: 8, right: 16, top: 34, height: "38%" }, { left: 8, right: 16, top: "58%", bottom: 40 }],
+    legend: { top: 0, left: "center", data: wk.rows.map((r) => byCode[r.c].nama) },
+    grid: [{ left: 8, right: 16, top: 62, height: "32%" }, { left: 8, right: 16, top: "62%", bottom: 40 }],
     xAxis: [
       { type: "category", data: wk.weeks.map(fmtDate), gridIndex: 0, axisLabel: { show: false }, axisTick: { show: false } },
       { type: "category", data: wk.weeks.map(fmtDate), gridIndex: 1, axisLabel: { fontSize: 10.5 } },
     ],
     yAxis: [
-      { type: "log", min: 5, gridIndex: 0, name: `PM2.5 (${UG}) · skala log`, nameTextStyle: { align: "left" } },
-      { type: "value", gridIndex: 1, name: `${tsOut} · 1 = minggu biasa`, nameTextStyle: { align: "left" }, min: (v: any) => Math.max(0, Math.floor(v.min * 5) / 5) },
+      { type: "log", min: 5, gridIndex: 0, name: `PM2.5 mingguan (${UG}), skala log`, nameTextStyle: { align: "left" }, nameGap: 10 },
+      { type: "value", gridIndex: 1, name: `Kasus ${tsOut} (1 = minggu biasa)`, nameTextStyle: { align: "left" }, nameGap: 10, min: (v: any) => Math.max(0, Math.floor(v.min * 5) / 5) },
     ],
     dataZoom: [{ type: "inside", xAxisIndex: [0, 1] }],
     series: [
       ...wk.rows.map((r) => ({ name: byCode[r.c].nama, type: "line" as const, xAxisIndex: 0, yAxisIndex: 0, symbol: "none", data: r.pm, lineStyle: { width: 2 }, itemStyle: { color: PICK_COL[r.slot] },
-        markLine: r.slot === wk.rows[0].slot ? { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "dashed" as const }, label: { formatter: "150 · ambang", position: "insideEndTop" as const, color: C.ink, fontSize: 10.5 }, data: [{ yAxis: 150 }] } : undefined })),
+        markLine: r.slot === wk.rows[0].slot ? { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "dashed" as const }, label: { formatter: "150 · Sangat Tidak Sehat", position: "insideEndTop" as const, color: C.ink, fontSize: 10.5 }, data: [{ yAxis: 150 }] } : undefined })),
       ...wk.rows.map((r) => ({ name: byCode[r.c].nama, type: "line" as const, xAxisIndex: 1, yAxisIndex: 1, symbol: "none", data: r.y, lineStyle: { width: 2 }, itemStyle: { color: PICK_COL[r.slot] } })),
     ],
   };
@@ -146,11 +146,11 @@ export default function Q4Dampak() {
           <Chart option={doseOpt} height={300} ariaLabel="Dosis-respons per kategori ISPU" />
         </Card>
       }
-      method="Model dua tahap: quasi-Poisson per RS (log₂ PM2.5 hari yang sama + spline waktu 12 df + suhu + hari), digabung meta-analisis random effects. Stabil di 8 uji sensitivitas. Data sintetis: dibaca sebagai asosiasi, bukan bukti sebab-akibat."
+      method="Model dua tahap: quasi-Poisson per RS (log₂ PM2.5 hari yang sama + spline waktu 12 df + suhu + hari), digabung meta-analisis random effects. Stabil di 8 uji sensitivitas. Angka “kematian 4,8×” = rata-rata kasus pada 127 hari-RS kategori Berbahaya dibanding hari biasa RS itu. Jantung dan kematian juga diberi suku tambahan di atas 150 µg/m³ (batas ISPU Sangat Tidak Sehat); kurvanya makin curam di konsentrasi tinggi, bukan berbelok tepat di 150. Data sintetis: dibaca sebagai asosiasi, bukan bukti sebab-akibat."
       supports={[
-        <Card key="w" title="Asap Naik, Pasien Ikut Naik" sub="Atas: PM2.5. Bawah: kasus RS pasangan (1 = minggu biasa)."
+        <Card key="w" title="Asap Naik, Pasien Ikut Naik" sub="Garis atas: PM2.5 mingguan. Garis bawah: kasus di RS pasangannya dibanding minggu biasa (2 = dua kali lipat)."
           right={<select value={tsOut} onChange={(e) => setTsOut(e.target.value)} aria-label="Pilih jenis kasus" className="pick-select">{OUT.map((o) => <option key={o}>{o}</option>)}</select>}>
-          {wk.rows.length ? <Chart option={tsOpt} height={340} ariaLabel="PM2.5 dan kasus rumah sakit mingguan" />
+          {wk.rows.length ? <Chart option={tsOpt} height={380} ariaLabel="PM2.5 dan kasus rumah sakit mingguan" />
             : <p className="note">Stasiun pilihan belum punya RS pasangan dengan data PM2.5 yang layak. Pilih stasiun lain di bar atas, misalnya {PICK_GLYPH[0]} Palangka Raya.</p>}
         </Card>,
         <Card key="c" title="Balita dan Lansia Sama Rentan" sub={`RR ${fmt(age.rr_balita, 2)} vs ${fmt(age.rr_lansia, 2)} (p = ${fmt(age.p_beda, 2)})`}>

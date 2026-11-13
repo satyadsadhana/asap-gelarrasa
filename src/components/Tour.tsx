@@ -23,6 +23,7 @@ const Ctx = createContext<T>({ start: () => {} });
 export const useTour = () => useContext(Ctx);
 
 type Annual = { per_stasiun: { code: string; tahun: number; rata2: number; lengkap: boolean; lampaui_PP22: boolean }[] };
+type Eps = { episode: { code: string; mulai: string; hari: number }[] };
 type View = "nasional" | "barat" | "kalimantan" | "jawa" | "rendah" | MapViewState;
 type Scene = {
   path: string; chapter: string; head: string; body: ReactNode; extra?: ReactNode; recall?: ReactNode; viz?: ReactNode;
@@ -46,7 +47,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
   const [step, setStep] = useState<number | null>(null);
   const nav = useNavigate();
   const { byCode } = useApp();
-  const d = useData<[Summary[], Annual, AngkaKunci]>("station_summary", "annual", "angka_kunci");
+  const d = useData<[Summary[], Annual, AngkaKunci, Eps]>("station_summary", "annual", "angka_kunci", "episodes");
   const capture = typeof location !== "undefined" && new URLSearchParams(location.search).has("capture");
 
   useEffect(() => {
@@ -62,14 +63,15 @@ export function TourProvider({ children }: { children: ReactNode }) {
 
   const scenes = useMemo<Scene[]>(() => {
     if (!d) return [];
-    const [summ, ann, ak] = d;
+    const [summ, ann, ak, eps] = d;
+    // sama dengan KPI halaman Pola Waktu: hari episode hanya di stasiun kawasan gambut
+    const gambutHari = (y: number) => eps.episode.filter((e) => byCode[e.code]?.gambut && Number(e.mulai.slice(0, 4)) === y).reduce((a, e) => a + e.hari, 0);
     const mean = Object.fromEntries(summ.map((s) => [s.code, s.rata2_pm25]));
     const p26 = Object.fromEntries(summ.map((s) => [s.code, s.periode_2026]));
     const v25 = Object.fromEntries(ann.per_stasiun.filter((r) => r.tahun === 2025 && r.lengkap).map((r) => [r.code, r.rata2]));
-    const natMean = summ.reduce((a, s) => a + s.rata2_pm25, 0) / summ.length;
+    const mean25 = Object.values(v25).reduce((a, b) => a + b, 0) / Object.values(v25).length; // adegan membahas 2025
     const t25 = ak.tahunan["2025"];
     const pk = ak.puncak_bulanan_gambut;
-    const ep = ak.episode_berat;
     const dek = (ak as unknown as { "dekomposisi_variasi_%": Record<string, number> })["dekomposisi_variasi_%"];
     const shap = (ak as unknown as { "shap_pemicu_%": Record<string, number> })["shap_pemicu_%"];
     const cuaca = (shap["Suhu"] ?? 0) + (shap["Kelembapan"] ?? 0) + (shap["Angin (kecepatan & arah)"] ?? 0);
@@ -85,24 +87,24 @@ export function TourProvider({ children }: { children: ReactNode }) {
     return [
       { path: "/", chapter: "Pembuka", view: "nasional", values: mean,
         head: "Tiga Menit, Enam Pertanyaan",
-        body: <>Kita menyusuri <b>27 stasiun</b> pemantau udara dan <b>27 rumah sakit</b> pasangannya, dari Sumatra sampai Papua, selama 1.018 hari.</>,
+        body: <>Kita menyusuri <b>27 stasiun</b> pemantau udara dan <b>27 rumah sakit</b> pasangannya, dari Sumatra sampai Papua, selama 1.018 hari. Analisis dampak memakai 25 RS: dua RS yang stasiunnya tidak punya data sah dikeluarkan.</>,
         extra: <>Setiap tiang di belakang adalah satu stasiun. Tinggi = rata-rata PM2.5, warna = kategori ISPU. Tekan <kbd>→</kbd> untuk lanjut.</> },
       { path: "/kondisi", chapter: "Bagian 2 · Kualitas Udara", view: "nasional", values: v25,
         head: `${t25.lampaui_baku_mutu_15} dari ${t25.stasiun_sah} Stasiun di Atas Baku Mutu`,
         body: <>Rata-rata PM2.5 tahun 2025 di hampir semua stasiun melewati batas tahunan nasional 15 {UG}.</>,
         extra: kritis ? <>PM2.5 menjadi polutan penentu ISPU pada <b>{fmt(kritis, 1)}%</b> hari. Gas lain hampir tidak pernah jadi masalah utama.</> : undefined,
         recall: <>Di halamannya, titik oranye paling kanan pada grafik per pulau adalah stasiun gambut yang paling pekat.</>,
-        viz: <div className="tv-pair"><ParticleBox value={15} title="Batas WHO" size={150} /><ParticleBox value={natMean} title="Rata-rata Stasiun" size={150} /></div> },
+        viz: <div className="tv-pair"><ParticleBox value={15} title="Batas WHO" size={150} /><ParticleBox value={mean25} title="Rata-rata Stasiun 2025" size={150} /></div> },
       { path: "/waktu", chapter: "Bagian 3 · Pola Waktu", view: "kalimantan", values: p26,
         head: "Asap Datang Tiap Akhir Juli",
         body: <>Musim risiko di kawasan gambut dimulai <b>minggu ke-{Math.min(...Object.values(minggu))}</b> dan memuncak September–Oktober, berulang tiga tahun.</>,
-        extra: <>Jumlah hari asap berat di semua stasiun naik dari <b>{ep["2024"].total_hari}</b> (2024) ke <b>{ep["2026"].total_hari}</b> (2026), padahal data 2026 baru sampai 14 Oktober.</>,
+        extra: <>Hari episode asap berat di kawasan gambut: <b>{gambutHari(2024)}</b> (2024) → <b>{gambutHari(2025)}</b> (2025) → <b>{gambutHari(2026)}</b> (2026), padahal data 2026 baru sampai 14 Oktober.</>,
         recall: <>Di halamannya, kotak gelap pada kalender risiko selalu mulai di minggu yang sama.</>,
         viz: <Reveal className="tv-bars"><span className="tv-cap">Puncak bulanan gambut ({UG})</span><BarsViz values={[pk["2024"], pk["2025"], pk["2026"]]} labels={[`2024 · ${fmt(pk["2024"], 0)}`, `2025 · ${fmt(pk["2025"], 0)}`, `2026 · ${fmt(pk["2026"], 0)}`]} tone="gambut" /></Reveal> },
       { path: "/pemicu", chapter: "Bagian 4 · Faktor Pemicu", view: "barat", values: p26,
         head: "Musim, Bukan Cuaca Harian",
         body: <><b>{fmt(dekM, 0)}%</b> naik-turun PM2.5 ditentukan musim dan episode asap. Lokasi menjelaskan {fmt(dekL, 0)}%, sisanya hari ke hari.</>,
-        extra: <>Suhu, kelembapan, dan angin bersama-sama hanya menggeser <b>{fmt(cuaca, 0)}%</b>. Mengendalikan kebakaran lebih menentukan daripada menunggu cuaca.</>,
+        extra: <>Menurut model (SHAP), suhu, kelembapan, dan angin hanya menggeser sekitar <b>{fmt(cuaca, 0)}%</b> di dalam satu stasiun. Mengendalikan kebakaran lebih menentukan daripada menunggu cuaca.</>,
         recall: <>Di halamannya, batang tiga warna menunjukkan bagian musim paling lebar.</>,
         viz: <Reveal className="tv-stack" aria-hidden>
           <span style={{ "--w": `${dekM}%` } as React.CSSProperties} className="m"><b>Musim {fmt(dekM, 0)}%</b></span>

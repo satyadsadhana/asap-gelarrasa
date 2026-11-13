@@ -94,7 +94,7 @@ export default function Q2Waktu() {
 
   return (
     <Page path="/waktu"
-      headline="Musim Asap Datang Tiap Akhir Juli, dan Tiap Tahun Makin Pekat"
+      headline="Paling Berbahaya Agustus–Oktober, Terparah September–Oktober 2026 di Kalimantan Tengah"
       kpis={<>
         <Kpi k="Puncak Bulanan Kawasan Gambut" v={`${fmt(pk[0], 0)} → ${fmt(pk[2], 0)}`} unit={UG}
           viz={<BarsViz values={pk} labels={["2024", "2025", "2026"]} tone="gambut" />} note={`2025: ${fmt(pk[1], 0)}. Puncak 2026 = ${fmt(pk[2] / pk[0], 1)} kali puncak 2024.`} />
@@ -112,18 +112,18 @@ export default function Q2Waktu() {
           <Chart option={seasonal} height={340} ariaLabel="Rata-rata bulanan PM2.5 kawasan gambut per tahun" />
         </Card>
       }
-      method="Titik harian sah bila ≥18 jam valid; mingguan bila ≥4 hari valid; bulanan bila ≥15 hari valid. Episode asap berat = ≥3 hari berturut-turut PM2.5 harian > 150,4 µg/m³; angka di atas hanya stasiun kawasan gambut (Samarinda, kawasan industri, dihitung terpisah). Kalender risiko = % hari-stasiun gambut dengan PM2.5 > 55,4 µg/m³. Jam: rata-rata per jam dibagi rata-rata harian stasiun itu. Selisih hari kerja dan akhir pekan: median 0,03%."
+      method="Titik harian sah bila ≥18 jam valid; mingguan bila ≥4 hari valid; bulanan bila ≥15 hari valid. Episode asap berat = ≥3 hari berturut-turut PM2.5 harian > 150,4 µg/m³; angka di atas hanya stasiun kawasan gambut (Samarinda, kawasan industri, dihitung terpisah). Kalender risiko = % hari-stasiun gambut dengan PM2.5 > 55,4 µg/m³. Jam: rata-rata per jam dibagi rata-rata harian stasiun itu. Akhir pekan vs hari kerja: median selisih rata-rata harian per stasiun 0,02% (akhir pekan sedikit lebih tinggi), praktis sama. Oktober 2026 hanya 1–14 Oktober."
       stories={<>
         <Story tone="gambut" title="Kalender Risiko: Kapan Harus Waspada"
           big={`Minggu ke-${start}`} bigNote="Awal musim risiko, sama di ketiga tahun"
           chart={<Chart option={calOpt} height={260} ariaLabel="Kalender risiko mingguan kawasan gambut" />}>
           <p>Setiap kotak satu minggu. Makin gelap, makin banyak hari tidak sehat. Pola akhir Juli sampai Oktober berulang <b>tiap tahun</b>, jadi siaga bisa dijadwalkan sebelum asap datang.</p>
         </Story>
-        <Story flip tone="focus" title="Jam Rawan: Kota Berdetak, Asap Tidak"
+        <Story flip tone="focus" title="Jam Rawan: Pagi dan Sore"
           big={pol === "pm25" ? "07–09 & 17–19" : "Siang"} bigNote={pol === "pm25" ? "Jam puncak stasiun tepi jalan" : "O₃ memuncak saat matahari terik"}
           right={<Seg value={pol} onChange={setPol} options={[["pm25", "PM2.5"], ["gas", "O₃ & NO₂"]]} />}
           chart={<Chart option={clock} height={360} ariaLabel="Profil jam PM2.5 dalam bentuk jam melingkar" />}>
-          <p>Baca seperti jam dinding: jam 00 di atas, berputar searah jarum jam. Garis yang menjauh dari tengah berarti di atas rata-rata hariannya. Garis <b>tepi jalan</b> menonjol di jam berangkat dan pulang kerja; garis <b>gambut</b> hampir bulat karena asap tidak mengenal jam.</p>
+          <p>Baca seperti jam dinding: jam 00 di atas, berputar searah jarum jam. Garis yang menjauh dari tengah berarti di atas rata-rata hariannya. Garis <b>tepi jalan</b> menonjol di jam berangkat dan pulang kerja. Garis <b>gambut</b> ikut naik pagi dan sore, tetapi naik-turun antarjam itu kecil dibanding lonjakan musim asap.</p>
         </Story>
       </>}
       more={[<div key="ts" data-title="Deret Harian per Stasiun"><TimeSeries daily={daily} /></div>]}

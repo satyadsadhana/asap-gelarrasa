@@ -36,7 +36,7 @@ const RECS = [
   { f: "pra", ico: "pemda", who: "KLHK & Pemda", what: "Cegah Karhutla sebelum Kemarau", when: "Juni–Juli, sebelum pita asap muncul", ev: "/pemicu", evl: "82% variasi dari musim", gain: "Tuas terbesar untuk lonjakan (2026: 160 hari asap berat di kawasan gambut)" },
   { f: "asap", ico: "rs", who: "Dinkes & BPBD wilayah gambut", what: "Siaga Rumah Sakit Musim Asap", when: "Mulai akhir Juli (minggu ke-31); penuh saat PM2.5 > 150", ev: "/waktu", evl: "Kalender risiko", gain: "Palangka Raya 2026, batas 55: −1.050 ISPA balita, −510 kematian" },
   { f: "asap", ico: "orang", who: "Dinkes & Puskesmas", what: "Lindungi Balita dan Lansia", when: "Hari ISPU ≥ Tidak Sehat (PM2.5 > 55)", ev: "/dampak", evl: "Balita vs lansia", gain: "Risiko sama (+56% vs +51%); 411 ribu kasus ISPA tercatat" },
-  { f: "harian", ico: "/pemicu", who: "Pemprov DKI & kota padat", what: "Kendalikan Emisi Jam Sibuk", when: "06–09 & 17–19 setiap hari", ev: "/pemicu", evl: "Lalu lintas ρ = 0,78", gain: "Marunda −30% PM2.5: −711 ISPA balita, −197 kematian/tahun" },
+  { f: "harian", ico: "/pemicu", who: "Pemprov DKI & kota padat", what: "Kendalikan Emisi Jam Sibuk", when: "06–09 & 17–19 setiap hari", ev: "/pemicu", evl: "Lalu lintas ρ = 0,78", gain: "Marunda −30% PM2.5 sepanjang 2025: −711 ISPA balita, −197 kematian" },
   { f: "panjang", ico: "/jaringan", who: "KLHK", what: "Verifikasi Unit Kembar di Kalteng", when: "Siklus anggaran berikutnya", ev: "/jaringan", evl: "Garis bukti", gain: "KTG-01 & KTG-02 nyaris identik (selisih level 0,1%, jarak 112 km). Bila terbukti duplikat, satu unit bisa dipindah ke koridor gambut yang belum terpantau" },
 ];
 
@@ -128,7 +128,7 @@ export default function Q6Aksi() {
   return (
     <Page path="/aksi" stageCap={jenis === "batas" ? batas : null}
       headline={beban ? `Batas Harian 55 µg/m³ pada 2025 Berarti ${fmt(-beban.kasus, 0)} Kasus ISPA Balita Lebih Sedikit` : "Simulasi dan Rekomendasi"}
-      method="Kasus skenario = kasus aktual × (PM skenario ÷ PM aktual)^(b ÷ ln 2), b per RS (empirical Bayes shrinkage). Kardiovaskular dan kematian memakai model ambang 150 µg/m³. Dihitung langsung di browser dari data harian. Estimasi dari model statistik pada data sintetis: menunjukkan arah dan besaran relatif, bukan prediksi pasti."
+      method="Kasus skenario = kasus aktual × (PM skenario ÷ PM aktual)^(b ÷ ln 2), b per RS (empirical Bayes shrinkage). Kardiovaskular dan kematian memakai model dengan suku tambahan di atas 150 µg/m³ (batas ISPU Sangat Tidak Sehat), karena kurvanya makin curam di konsentrasi tinggi. Dihitung langsung di browser dari data harian. Estimasi dari model statistik pada data sintetis: menunjukkan arah dan besaran relatif, bukan prediksi pasti."
       main={<>
         <Reveal as="section" className="sim-deck">
           <div className="sim-top">
@@ -166,7 +166,7 @@ export default function Q6Aksi() {
           <div className="sim-where">
             <label>Rumah Sakit
               <select value={rs} onChange={(e) => setRs(e.target.value)}>
-                <option value="all">Semua 25 rumah sakit</option>
+                <option value="all">Semua 25 rumah sakit (tanpa Muaro Jambi & Merauke)</option>
                 {h.model.map((hid) => { const s = byCode[h.rs[hid].code]; return <option key={hid} value={hid}>{s.nama} · {s.provinsi}</option>; })}
               </select>
             </label>

@@ -15,6 +15,8 @@ const STEPS = [
   ["Agregat", "Harian sah bila ≥18 jam valid; tahunan sah bila ≥75% hari valid"],
 ];
 const GLOS = [
+  ["PM2.5", "Debu dan asap halus berukuran 2,5 mikrometer atau lebih kecil, cukup kecil untuk terhirup sampai ke paru-paru. Sumber utamanya kendaraan, industri, serta kebakaran hutan dan lahan."],
+  ["µg/m³", "Mikrogram per meter kubik: berat partikel dalam satu meter kubik udara. 1 µg = sepersejuta gram."],
   ["ISPU", "Indeks Standar Pencemar Udara (Permen LHK 14/2020): kategori harian Baik–Berbahaya."],
   ["IKU", "Indeks Kualitas Udara (Permen LHK 27/2021): indeks tahunan dari NO₂ & SO₂ saja."],
   ["RR / kenaikan risiko", "Perbandingan kasus ketika PM2.5 berlipat dua, dibanding kondisi biasa RS itu."],
@@ -64,7 +66,7 @@ export default function Tentang() {
           <ul style={{ paddingLeft: 18, fontSize: 13, lineHeight: 1.6, marginTop: 8 }}>
             <li><b>M1 Tipologi</b>: K-Means pada bentuk pola (lonjakan & musiman), dicek dengan hierarchical (ARI 0,69).</li>
             <li><b>M2 Pemicu</b>: LightGBM + SHAP, latih 2024–2025, uji 2026 (R² 0,72).</li>
-            <li><b>M3 Dampak</b>: Poisson dua tahap per RS + meta-analisis random effects; model ambang 150 untuk jantung & kematian; 8 uji sensitivitas.</li>
+            <li><b>M3 Dampak</b>: Poisson dua tahap per RS + meta-analisis random effects; model dengan suku tambahan di atas 150 (batas ISPU, bukan titik belok) untuk jantung & kematian; 8 uji sensitivitas.</li>
             <li><b>M4 Anomali</b>: Isolation Forest per stasiun, dibandingkan dengan musim asap.</li>
           </ul>
         </section>

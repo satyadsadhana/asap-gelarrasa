@@ -4,10 +4,10 @@ import Chart from "../components/Chart";
 import { Card, Kpi, Page, Seg, Story } from "../components/Layout";
 import { BarsViz, DotsViz, ParticleBox, Reveal, SlopeViz, VersusViz } from "../components/Viz";
 import { useData } from "../lib/data";
-import { fmt, fmtPct, UG } from "../lib/format";
-import { useApp, usePick, usePickSymbol, useStationFilter } from "../lib/state";
+import { fmt, fmtDate, fmtPct, UG } from "../lib/format";
+import { dateAt, useApp, usePick, usePickSymbol, useStationFilter } from "../lib/state";
 import { C, GAMBUT_COL, MUTED, TIPE_COL } from "../lib/theme";
-import type { Summary } from "../lib/types";
+import type { Daily, Summary } from "../lib/types";
 
 type Annual = { per_stasiun: { code: string; tahun: number; rata2: number; lengkap: boolean; lampaui_PP22: boolean }[]; tangga_who: Record<string, Record<string, number>>; urutan_tangga: string[] };
 type Trend = { kelompok: Record<string, Record<string, number>>; kelompok_musim: { gambut: string; musim: string; [y: string]: number | string }[] };
@@ -18,7 +18,7 @@ const PULAU_URUT = ["Kalimantan", "Sumatera", "Jawa", "Sulawesi", "Papua"];
 const CONTOH = ["SM2-01", "KTG-01", "JKT-02", "IDP-01"];
 
 export default function Q1Kondisi() {
-  const d = useData<[Summary[], Annual, Trend, Iku]>("station_summary", "annual", "trend", "iku");
+  const d = useData<[Summary[], Annual, Trend, Iku, Daily]>("station_summary", "annual", "trend", "iku", "daily");
   const { acuan, byCode, openProfil } = useApp();
   const pick = usePick();
   const sym = usePickSymbol();
@@ -160,6 +160,25 @@ export default function Q1Kondisi() {
   const a = sById[air];
   const top = rank[rank.length - 1];
 
+  // Poin 19: "paling kotor" punya empat jawaban, tergantung ukurannya. Hanya stasiun sah.
+  const daily = d[4];
+  const hariTerburuk = Object.fromEntries(Object.entries(daily.pm25).map(([c, arr]) => {
+    let v = -1, i0 = 0;
+    arr.forEach((x, i) => { if (x != null && x > v) { v = x; i0 = i; } });
+    return [c, { v, tgl: dateAt(i0, daily.mulai) }];
+  }));
+  const sah = summ.filter((s) => !byCode[s.code]?.dikecualikan);
+  const nama = (c: string) => { const st = byCode[c]; return st.grade === "C" || st.grade === "D" ? `${st.nama} (grade ${st.grade})` : st.nama; };
+  const UKURAN: { k: string; v: (s: Summary) => number; u: string }[] = [
+    { k: "Rata-rata 2024–2026", v: (s) => s.rata2_pm25, u: UG },
+    { k: `Hari di atas 55 ${UG}`, v: (s) => s.pct_hari_gt55, u: "% hari" },
+    { k: "5% hari terburuk (persentil 95)", v: (s) => s.p95_pm25, u: UG },
+    { k: "Satu hari terburuk", v: (s) => hariTerburuk[s.code]?.v ?? 0, u: UG },
+  ];
+  const juara = UKURAN.map((m) => ({ ...m, top: [...sah].sort((x, y) => m.v(y) - m.v(x)).slice(0, 3) }));
+  const andalTeratas = [...sah].filter((s) => !["C", "D"].includes(byCode[s.code].grade)).sort((x, y) => y.rata2_pm25 - x.rata2_pm25)[0];
+  const puncakHari = juara[3].top[0];
+
   return (
     <Page path="/kondisi"
       headline={`${fmt(lampaui, 0)} dari ${rank.length} Stasiun Mencatat Udara di Atas Baku Mutu`}
@@ -206,13 +225,20 @@ export default function Q1Kondisi() {
             <ParticleBox value={a?.p95_pm25 ?? null} title={`Hari Terburuk di ${byCode[air]?.nama ?? "–"}`} sub="Persentil 95" />
           </div>
         </Reveal>
-        <Story tone="gambut" title="Gambut Naik, Kawasan Lain Datar"
+        <Story tone="alert" title="Paling Kotor Tergantung Cara Mengukurnya"
+          big={byCode[juara[1].top[0].code].nama} bigNote={`satu-satunya stasiun dengan ${fmt(juara[1].top[0].pct_hari_gt55, 0)}% hari di atas 55 ${UG}`}
+          chart={<div className="tbl-wrap"><table className="tbl dirty"><thead><tr><th>Ukuran</th><th>Peringkat 1</th><th>2</th><th>3</th></tr></thead>
+            <tbody>{juara.map((m) => <tr key={m.k}><td><b>{m.k}</b></td>{m.top.map((s) => <td key={s.code}><button className="link-btn" onClick={() => openProfil(s.code)}>{nama(s.code)}</button><br /><small>{fmt(m.v(s), 1)} {m.u}</small></td>)}</tr>)}</tbody></table></div>}>
+          <p>Rata-rata tertinggi ada di <b>{nama(juara[0].top[0].code)}</b>; di antara stasiun yang datanya andal, tertinggi {byCode[andalTeratas.code].nama} ({fmt(andalTeratas.rata2_pm25, 1)} {UG}). Puncak satu hari tertinggi: <b>{byCode[puncakHari.code].nama}</b>, {fmt(hariTerburuk[puncakHari.code].v, 0)} {UG} pada {fmtDate(hariTerburuk[puncakHari.code].tgl)}.</p>
+          <p>Ada dua jenis udara kotor. <b>Kronis</b>: Marunda tidak pernah sehat, tetapi juga tidak pernah ekstrem. <b>Episodik</b>: stasiun Kalimantan biasa saja sebagian besar tahun, lalu meledak saat musim asap.</p>
+        </Story>
+        <Story flip tone="gambut" title="Gambut Naik, Kawasan Lain Datar"
           big={fmtPct(pct("Gambut"), 0, true)} bigNote="PM2.5 kawasan gambut, 2024 → 2026"
           right={<Seg value={musim} onChange={setMusim} options={[["semua", "Setahun"], ["Jan–Jun", "Luar Musim"], ["Jul–14 Okt", "Musim Asap"]]} />}
           chart={<Chart option={trendOpt} height={320} ariaLabel="Tren PM2.5 gambut dan kawasan lain" />}>
           <p>Di luar musim asap, kedua kelompok hampir sama. Bedanya muncul <b>Juli sampai Oktober</b>: pilih "Musim Asap" untuk melihat garis gambut melonjak.</p>
         </Story>
-        <Story flip tone="alert" title={'IKU Bilang "Baik", PM2.5 Bilang Tidak'}
+        <Story tone="alert" title={'IKU Bilang "Baik", PM2.5 Bilang Tidak'}
           big={fmt(blindN, 0)} bigNote={`stasiun ber-IKU "Baik" dengan PM2.5 tahunan > 35 ${UG}`}
           chart={<Chart option={ikuOpt} height={320} onClick={(p: any) => p.data?.code && openProfil(p.data.code)} ariaLabel="IKU versus PM2.5 per stasiun" />}>
           <p>Indeks Kualitas Udara resmi hanya memakai NO₂ dan SO₂. Akibatnya stasiun yang paling berasap, seperti {top ? <b>{byCode[top.code].nama}</b> : null}, tetap tercatat "Baik". Titik merah adalah stasiun yang terlewat.</p>
