@@ -3,6 +3,8 @@ import type { EChartsOption } from "echarts";
 import { Link } from "react-router-dom";
 import Chart from "../components/Chart";
 import NavIcon from "../components/NavIcon";
+import Prioritas from "../components/Prioritas";
+import type { RRFile } from "../lib/prioritas";
 import { Card, Page, Seg } from "../components/Layout";
 import { Count, Reveal } from "../components/Viz";
 import { useData } from "../lib/data";
@@ -13,12 +15,14 @@ import type { AngkaKunci, HospitalDaily, ModelDampak } from "../lib/types";
 import { C } from "../lib/theme";
 
 const PER = {
-  "2025": { label: "Tahun 2025", from: "2025-01-01", to: "2025-12-31" },
-  asap2026: { label: "Musim asap 2026 (1 Jul–14 Okt)", from: "2026-07-01", to: "2026-10-14" },
-  "2024": { label: "Tahun 2024", from: "2024-01-01", to: "2024-12-31" },
-  semua: { label: "2024 – 14 Okt 2026", from: "2024-01-01", to: "2026-10-14" },
+  "2025": { label: "Tahun 2025", pendek: "2025", from: "2025-01-01", to: "2025-12-31" },
+  asap2026: { label: "Musim asap 2026 (1 Jul–14 Okt)", pendek: "musim 2026", from: "2026-07-01", to: "2026-10-14" },
+  "2024": { label: "Tahun 2024", pendek: "2024", from: "2024-01-01", to: "2024-12-31" },
+  semua: { label: "2024 – 14 Okt 2026", pendek: "2024–2026", from: "2024-01-01", to: "2026-10-14" },
 } as const;
 type PerKey = keyof typeof PER;
+/** Tiga periode untuk blok "Apakah Daftar Ini Awet?" (urut waktu). */
+const TAHUNAN = (["2024", "2025", "asap2026"] as const).map((k) => ({ key: k, ...PER[k] }));
 const MIN = 15, MAX = 300;
 const PRESET = [{ v: 15, l: "WHO harian", s: "15" }, { v: 55, l: "Baku mutu nasional", s: "55" }, { v: 150, l: "Ambang jantung", s: "150" }];
 
@@ -71,7 +75,7 @@ function Pictos({ label, sub, row, ico }: { label: string; sub: string; row?: { 
 }
 
 export default function Q6Aksi() {
-  const d = useData<[HospitalDaily, ModelDampak, AngkaKunci]>("hospital_daily", "model_dampak", "angka_kunci");
+  const d = useData<[HospitalDaily, ModelDampak, AngkaKunci, RRFile]>("hospital_daily", "model_dampak", "angka_kunci", "rr");
   const { pilihan, byCode } = useApp();
   const firstSim = pilihan.map((c) => byCode[c]).find((s) => s?.simulasi)?.hospital_id ?? "RS-XXX-04";
   const [rs, setRs] = useState<string>("all");
@@ -91,7 +95,7 @@ export default function Q6Aksi() {
   }, [d, rs, per, jenis, batas, kurangi]);
 
   if (!d || !res) return <div className="loading">Memuat data simulasi…</div>;
-  const [h, , ak] = d;
+  const [h, md, ak, rrf] = d;
   const beban = ak.beban_2025_batas55["ISPA balita"];
   const rsCode = rs === "all" ? null : h.rs[rs].code;
   const rsName = rsCode ? `${byCode[rsCode].rs_nama} (${byCode[rsCode].nama})` : "Semua 25 rumah sakit";
@@ -214,9 +218,11 @@ export default function Q6Aksi() {
             </table>
           </div>
         </Card>
+
+        <Prioritas h={h} m={md} rr={rrf} byCode={byCode} sk={sk} per={{ key: per, ...PER[per] }} periodeTahunan={TAHUNAN} />
       </>}
       extra={
-        <section className="recs-wrap">
+        <section className="recs-wrap" id="tujuh-langkah">
           <div className="sec-head"><h2>Tujuh Langkah, Disusun Menurut Waktu</h2><p>Klik langkah untuk melihat kapan, manfaat, dan buktinya di halaman sebelumnya.</p></div>
           <Reveal as="ol" className="plan">
             {FASE.map((f, fi) => (

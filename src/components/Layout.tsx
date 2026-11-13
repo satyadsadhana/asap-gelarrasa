@@ -19,6 +19,7 @@ export const PAGES = [
   { path: "/dampak", short: "Dampak Kesehatan", nav: "Dampak", q: "Apa Dampaknya bagi Kesehatan?", label: "PM2.5 & kasus rumah sakit", desc: "Hubungan PM2.5 harian dengan kasus ISPA, asma, PPOK, kardiovaskular, dan kematian di 25 rumah sakit. RS pasangan Muaro Jambi dan Merauke tidak dihitung karena data udaranya tidak sah.", filters: [] },
   { path: "/jaringan", short: "Jaringan Pemantauan", nav: "Jaringan", q: "Bisakah Datanya Dipercaya?", label: "Kualitas data stasiun", desc: "Keandalan data tiap stasiun, penempatan stasiun, dan prioritas perbaikan.", filters: ["pulau", "kawasan"] },
   { path: "/aksi", short: "Simulasi & Rekomendasi", nav: "Simulasi", q: "Apa yang Bisa Dilakukan?", label: "Skenario kebijakan", desc: "Simulasi jumlah kasus bila PM2.5 dibatasi atau dikurangi, dan rekomendasi tindakan.", filters: [] },
+  { path: "/prakiraan", short: "Prakiraan 7 Hari", nav: "Prakiraan", q: "Bagaimana Udara Minggu Depan?", label: "Prakiraan PM2.5 harian", desc: "Prakiraan PM2.5 harian 1–7 hari ke depan per stasiun, dengan rentang keyakinan dan uji akurasi terhadap data 2026.", filters: [] },
 ] as const;
 
 /** Rel navigasi kiri: logo Gelar Rasa di puncak, ikon + label tiap halaman, lalu Tentang Data dan Tur. */

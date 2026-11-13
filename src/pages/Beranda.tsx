@@ -94,6 +94,7 @@ export default function Beranda() {
     "/pemicu": `${fmt(dek, 0)}% naik-turun PM2.5 ditentukan musim, bukan cuaca harian.`,
     "/dampak": `ISPA balita naik ${fmtPct((rr - 1) * 100, 0, true)} tiap PM2.5 berlipat dua.`,
     "/jaringan": `${ak.jaringan.Andal} dari 27 stasiun andal; sisanya punya masalah data.`,
+    "/prakiraan": "Prakiraan 7 hari per stasiun, diuji terhadap data 2026 dan dibandingkan dengan nilai hari ini.",
     "/aksi": `Batas harian 55 ${UG} di 2025: ${fmt(-ak.beban_2025_batas55["ISPA balita"].kasus, 0)} kasus ISPA balita lebih sedikit.`,
   };
 
@@ -173,7 +174,7 @@ export default function Beranda() {
       </Reveal>
 
       <div className="sec-head">
-        <h2>Enam Pertanyaan, Satu Jalur</h2>
+        <h2>Tujuh Pertanyaan, Satu Jalur</h2>
         <p>Dari kondisi udara sampai langkah yang bisa diambil. Arahkan kursor ke halte untuk mengintip jawabannya.</p>
       </div>
       <Reveal as="section" className="route" data-tour="route">
@@ -190,7 +191,7 @@ export default function Beranda() {
           ))}
         </ol>
         <div className="route-foot">
-          <p>Lebih suka diantar? Tur cerita merangkum keenam jawaban dalam delapan adegan.</p>
+          <p>Lebih suka diantar? Tur cerita merangkum enam jawaban pertama dalam delapan adegan.</p>
           <Link to="/kondisi">Mulai dari Pertanyaan Pertama</Link>
         </div>
       </Reveal>

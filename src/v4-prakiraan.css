@@ -1,0 +1,36 @@
+/* ---------- Prakiraan PM2.5 7 hari (halaman /prakiraan) ---------- */
+.pk-method span { display: block; margin-top: 6px; }
+.pk-method span:first-child { margin-top: 0; }
+
+/* tujuh kotak hari di bawah grafik detail */
+.pk-days { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.pk-days li { display: flex; flex-direction: column; gap: 2px; padding: 10px 10px 9px; border-radius: 12px; background: #f3f6f7; border: 1px solid transparent; min-width: 0; }
+.pk-days li.on { background: #fff4ec; border-color: rgba(212, 98, 42, .35); }
+.pk-days small { font-size: 11px; font-weight: 650; color: var(--ink-soft); white-space: nowrap; }
+.pk-days b { font: 600 22px/1.1 var(--font-num); color: var(--navy); }
+.pk-days span { font: 500 11.5px var(--font-num); color: var(--ink-soft); white-space: nowrap; }
+.pk-days em { font-style: normal; font-size: 11px; font-weight: 700; color: var(--teal-ink); white-space: nowrap; }
+.pk-days li.on em { color: #a8461c; }
+
+/* tabel uji */
+.pk-tab-wrap { overflow-x: auto; }
+.pk-tab { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+.pk-tab th { text-align: right; font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-soft); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.pk-tab th:first-child, .pk-tab td:first-child { text-align: left; }
+.pk-tab td { text-align: right; padding: 8px 10px; border-bottom: 1px solid #eef2f3; font-family: var(--font-num); color: var(--navy); white-space: nowrap; }
+.pk-tab td small { color: var(--ink-soft); font-size: 11px; }
+.pk-tab td.pos { color: var(--teal-ink); font-weight: 700; }
+.pk-tab td.neg { color: #b42318; font-weight: 700; }
+
+/* cara kerja */
+.pk-cara { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 10px; }
+.pk-cara > div { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: #fff; border: 1px solid var(--line); }
+.pk-cara b { font: 600 14px var(--font-head); color: var(--navy); }
+.pk-cara span { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+
+@media (max-width: 760px) {
+  .pk-days { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+  .pk-days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

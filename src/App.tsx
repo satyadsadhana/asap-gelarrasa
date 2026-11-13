@@ -15,6 +15,7 @@ const Q3 = lazy(() => import("./pages/Q3Pemicu"));
 const Q4 = lazy(() => import("./pages/Q4Dampak"));
 const Q5 = lazy(() => import("./pages/Q5Jaringan"));
 const Q6 = lazy(() => import("./pages/Q6Aksi"));
+const Q7 = lazy(() => import("./pages/Q7Prakiraan"));
 const Tentang = lazy(() => import("./pages/Tentang"));
 
 function ScrollTop() {
@@ -40,6 +41,7 @@ function Shell() {
               <Route path="/dampak" element={<Q4 />} />
               <Route path="/jaringan" element={<Q5 />} />
               <Route path="/aksi" element={<Q6 />} />
+              <Route path="/prakiraan" element={<Q7 />} />
               <Route path="/tentang" element={<Tentang />} />
               <Route path="*" element={<Beranda />} />
             </Routes>
