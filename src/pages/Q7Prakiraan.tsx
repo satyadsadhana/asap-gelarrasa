@@ -141,7 +141,10 @@ export default function Q7Prakiraan() {
 
   // musim asap: periode PM2.5 > 55 per lokasi per tahun
   const akhirLalu = (m: MusimSt) => m.tahun["2025"]?.akhir ?? m.tahun["2024"]?.akhir ?? null;
-  const musimSt = v6.musim.filter((m) => m.code !== "KTG-02" && TAHUN3.some((y) => (m.tahun[y]?.rata ?? 0) > pk.batas))
+  const sepanjang = (m: MusimSt) => { const t = m.tahun["2026"]; return !!t?.mulai?.endsWith("01-01") && (!!t.berlanjut || !!t.akhir?.endsWith("12-31")); };
+  const tahunan = v6.musim.filter((m) => m.code !== "KTG-02" && sepanjang(m));
+  const beku = new Set(vf.kualitas.filter((q) => q.lencana.includes("pernah beku")).map((q) => q.code));
+  const musimSt = v6.musim.filter((m) => m.code !== "KTG-02" && !sepanjang(m) && TAHUN3.some((y) => (m.tahun[y]?.rata ?? 0) > pk.batas))
     .sort((a, b) => Number(!!a.tahun["2026"]?.mulai?.endsWith("01-01")) - Number(!!b.tahun["2026"]?.mulai?.endsWith("01-01"))
       || (b.tahun["2026"]?.rata ?? 0) - (a.tahun["2026"]?.rata ?? 0));
   const musimIni = musimSt.filter((m) => m.tahun["2026"]?.berlanjut && !m.tahun["2026"]?.mulai?.endsWith("01-01"));
@@ -178,7 +181,7 @@ export default function Q7Prakiraan() {
   return (
     <Page path="/prakiraan" noStage
       headline={atas.length > 0 ? `${atas.length} Lokasi Diperkirakan di Atas 55 Sampai ${akhir7}` : `Semua Lokasi Diperkirakan di Bawah 55 Sampai ${akhir7}`}
-      method={<span>Prakiraan dari data terakhir {terbit}, diuji pada seluruh 2026. Alat bantu, bukan peringatan resmi.</span>}
+      method={<span><b>Disimulasikan per {terbit}, hari terakhir data.</b> Diuji pada seluruh 2026. Alat bantu, bukan peringatan resmi.</span>}
       kpis={<>
         <Kpi k="Bulan Asap Sama 3 Tahun" v={`${sama}/${lewatAll.length}`} viz={<DotsViz n={sama} total={lewatAll.length} tone="gambut" />}
           note="lokasi jalur asap, 2024–2026" />
@@ -188,22 +191,26 @@ export default function Q7Prakiraan() {
           note={`stasiun, dibanding menyalin hari ini · selisih ${fmt(h1.mae_salin - h1.mae_model, 1)} ${UG}`} />
       </>}
       main={<>
-        <Card title={akhirUmum && sisa != null && sisa > 0 ? `Musim Asap Diperkirakan Berakhir ${pendek(geser(akhirUmum))}, ${sisa} Hari Lagi` : "Musim Asap per Lokasi"}
-          sub="Batang = musim asap 2026, saat PM2.5 di atas 55. Warna makin gelap, makin parah.">
+        <Card title={akhirUmum ? `Pada 2024 dan 2025, Level Turun di ${pendek(addDays(geser(akhirUmum), 1))}` : "Musim Asap per Lokasi"}
+          sub={<>Batang = musim asap 2026, saat PM2.5 di atas 55. Warna makin gelap, makin parah.{akhirUmum && sisa != null && sisa > 0 && <> Kalau pola dua tahun itu berulang, sisa musim tinggal {sisa} hari dari {pendek(pk.terbit)}. Ini pola kalender data, bukan ramalan model.</>}</>}>
           <div className="pk-musim-stat">
             {akhirUmum && <div><b>{akhirSama}<small>/{musimIni.length}</small></b><span>lokasi selesai di {pendek(geser(akhirUmum))} pada 2024 dan 2025</span></div>}
             <div><b>{naik.length}</b><span>lokasi makin parah tiap tahun{terNaik ? <>, terbesar <em>{labelKode(terNaik.code)}</em> {fmt(terNaik.tahun["2025"]!.rata!, 0)} → {fmt(terNaik.tahun["2026"]!.rata!, 0)}</> : null}</span></div>
             {baru.length > 0 && <div className="baru"><b>{baru.length}</b><span>baru pertama kali di atas 55: <em>{baru.map((m) => labelKode(m.code)).join(", ")}</em>, sejak {pendek(baru[0].tahun["2026"]!.mulai!)}</span></div>}
           </div>
-          <Linimasa st={musimSt} label={labelKode} terbit={pk.terbit} akhirLalu={akhirLalu} akhirUmum={akhirUmum} kode={kode} onPilih={setPilih} />
+          <Linimasa st={musimSt} label={labelKode} terbit={pk.terbit} akhirLalu={akhirLalu} akhirUmum={akhirUmum} kode={kode} onPilih={setPilih} beku={beku} />
           <div className="pk-legenda" aria-label="Keterangan linimasa musim">
             <b className="pk-leg-judul">Rata-rata 2026 ({UG})</b>
             {MUSIM_LAB.map((l, i) => <span key={l}><i style={{ background: MUSIM_COL[i] }} />{l}</span>)}
-            <span><i className="putus" />sisa musim</span>
+            <span><i className="putus" />sisa musim jika mengikuti 2025</span>
             <span><i className="garis" />musim 2025</span>
             <span><i className="wajik" />akhir 2025</span>
             <span><i className="bulat" />akhir 2024</span>
           </div>
+          {(tahunan.length > 0 || musimSt.some((m) => beku.has(m.code))) && <p className="note">
+            {tahunan.length > 0 && <>{tahunan.map((m) => labelKode(m.code)).join(", ")} tidak ditampilkan: di atas 55 sepanjang tahun, bukan musim. </>}
+            {musimSt.filter((m) => beku.has(m.code)).map((m) => <span key={m.code}>{labelKode(m.code)} bertanda <b>data beku</b>: sensornya pernah membeku, jadi rata-ratanya sama persis tiap tahun. </span>)}
+          </p>}
         </Card>
 
         <Card title={mode === "terbit" || besok.akt == null ? `${label(sel)}: ${ISPU_LAB[ispuIdx(besok.nilai)]} ${mode === "terbit" ? "Besok" : `pada ${pendek(besok.tgl)}`}`
@@ -247,7 +254,7 @@ export default function Q7Prakiraan() {
 
         <Card title={rs ? `${rs.nama}: ${rsBeda >= 0 ? "+" : "−"}${fmt(Math.abs(rsBeda), 0)} Kasus Napas dalam 7 Hari` : `${label(sel)}: Tidak Ada Rumah Sakit Pasangan`}
           sub={rs ? `Perkiraan ${fmt(rsTot, 0)} kasus sampai ${akhir7}, dibanding ${fmt(rs.rata7 * 7, 0)} pada 7 hari terakhir.` : undefined}
-          note={rs ? `Rumus sama dengan halaman Simulasi. Uji 2026: galat ${pct(ks.lompat.turun)} lebih kecil dari rata-rata 7 hari saat PM2.5 melompat.` : undefined}>
+          note={rs ? `Rumus sama dengan halaman Simulasi. Uji 2026: galat ${pct(ks.lompat.turun)} lebih kecil dari rata-rata 7 hari saat PM2.5 melompat. PM2.5 musim 2026 jauh di atas rentang data pembentuk rumus, jadi angka kasus bersifat ekstrapolasi.` : undefined}>
           {rs ? <KasusRS r={rs} terbit={v6.terbit} /> : <p className="note">Pilih lokasi lain untuk melihat dampak ke rumah sakit.</p>}
         </Card>
       </>}
@@ -285,6 +292,7 @@ function Lencana({ k }: { k?: Kualitas }) {
 
 /* ---------- angka utama lokasi terpilih: kategori dulu, angka dibulatkan ---------- */
 type Transisi = { bulan: number; ubah: number | null; hari: number; dalam7: boolean } | null;
+const arah = (u: number | null) => (u == null ? "–" : u <= -0.5 ? "Turun tajam" : u <= -0.15 ? "Turun" : u >= 0.5 ? "Naik tajam" : u >= 0.15 ? "Naik" : "Relatif sama");
 const bulat = (v: number) => (v >= 1000 ? Math.round(v / 50) * 50 : v >= 100 ? Math.round(v / 10) * 10 : Math.round(v));
 
 function Angka({ s, ulang, batas, transisi }: { s: Tampil; ulang: boolean; batas: number; transisi: Transisi }) {
@@ -310,8 +318,8 @@ function Angka({ s, ulang, batas, transisi }: { s: Tampil; ulang: boolean; batas
     {item(`Besok, ${hariKe(b.tgl)} ${pendek(b.tgl)}`, ISPU_LAB[c], `sekitar ${fmt(bulat(b.nilai), 0)} ${UG}`, { warna: c })}
     {item("Di atas 55, 7 hari ke depan", `${atas.length} dari 7 hari`, yakin)}
     {transisi && item(transisi.dalam7 ? `Masuk ${BULAN[transisi.bulan]}, pekan ini` : `Masuk ${BULAN[transisi.bulan]}, ${transisi.hari} hari lagi`,
-      transisi.ubah == null ? "–" : `${transisi.ubah > 0 ? "+" : "−"}${fmt(Math.abs(transisi.ubah) * 100, 0)}%`,
-      "perubahan level tahun lalu di lokasi ini", { cls: transisi.dalam7 ? "awas" : "" })}
+      arah(transisi.ubah),
+      transisi.ubah == null ? "belum ada data tahun lalu" : `pola 1 tahun (2025) di lokasi ini: ${transisi.ubah > 0 ? "+" : "−"}${fmt(Math.abs(transisi.ubah) * 100, 0)}%`, { cls: transisi.dalam7 ? "awas" : "" })}
   </div>;
 }
 
@@ -463,7 +471,7 @@ function CaraKerja({ vf, sb }: { vf: Verif; sb: Verif["struktur_bulanan"] }) {
       <div><b>Penyetelan</b><span>{vf.setelan.percobaan} percobaan Optuna di 2025. Terpilih: {String(b.objective)}, {b.n_estimators} pohon, {b.num_leaves} daun.</span></div>
       <div><b>Rentang dan Peluang</b><span>Rentang 80% dari sebaran galat 2025 per stasiun, musim, dan horizon. Peluang &gt; 55 = gabungan model dan pola musiman per stasiun-bulan, bobotnya dipilih di 2025.</span></div>
       <div><b>Lapis Transisi Bulan</b><span>Saat tanggal target pindah bulan, prakiraan = nilai hari ini + selisih log level bulan target dan bulan asal tahun lalu di stasiun itu. Di uji 2026 galat log turun sekitar 65% pada lintas bulan (validasi 2025: sekitar 58–61%). Metode ini memanfaatkan pola tangga bulanan di dataset ini; pada sensor yang tidak berpola begitu, lapis ini tidak banyak membantu.</span></div>
-      <div><b>Linimasa Musim</b><span>Periode PM2.5 di atas 55 per lokasi per tahun (hari berurutan, celah sampai 10 hari digabung). Sisa musim 2026 = sampai tanggal akhir musim 2025 di lokasi itu; akhir musim sama pada 2024 dan 2025 di hampir semua lokasi.</span></div><div><b>Rekam Jejak</b><span>Garis teal di grafik lokasi = prakiraan besok yang dibuat sehari sebelumnya, diambil dari arsip uji berjalan 2026.</span></div>
+      <div><b>Linimasa Musim</b><span>Periode PM2.5 di atas 55 per lokasi per tahun (hari berurutan, celah sampai 10 hari digabung). Sisa musim 2026 = sampai tanggal akhir musim 2025 di lokasi itu (pola kalender dari 2 tahun, bukan ramalan model); lokasi yang di atas 55 sepanjang tahun tidak ditampilkan; akhir musim sama pada 2024 dan 2025 di hampir semua lokasi.</span></div><div><b>Rekam Jejak</b><span>Garis teal di grafik lokasi = prakiraan besok yang dibuat sehari sebelumnya, diambil dari arsip uji berjalan 2026.</span></div>
       <div><b>Kasus Napas</b><span>Rata-rata kasus 7 hari terakhir × (PM2.5 prakiraan ÷ PM2.5 7 hari terakhir)^(b ÷ ln 2), b per RS dari model dampak halaman Simulasi. Diuji balik pada arsip prakiraan 2026.</span></div>
       <div><b>Struktur Dataset</b><span>Tingkat PM2.5 di dataset berganti pada tanggal 1 tiap bulan: {sb.awal_lonjakan_tgl1} dari {sb.awal_lonjakan} awal lonjakan dan {sb.lonjakan_besar_tgl1} dari {sb.lonjakan_besar} lonjakan besar jatuh pada tanggal 1. Sebelumnya struktur ini sengaja tidak dimanfaatkan; sekarang dipakai secara terbuka di lapis transisi, dan bergantung pada dataset ini.</span></div>
       <div><b>Batasan</b><span>Tanpa titik api dan curah hujan, model tidak bisa melihat kebakaran baru sebelum asapnya terukur. Angka harian di atas 7 hari tidak ditampilkan.</span></div>
@@ -480,8 +488,8 @@ const binMusim = (v: number) => MUSIM_BATAS.filter((b) => v >= b).length;
 const geser = (iso: string) => `2026${iso.slice(4)}`;
 const ts = (iso: string) => Date.parse(iso + "T00:00:00Z");
 
-function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih }: { st: MusimSt[]; label: (c: string) => string; terbit: string;
-  akhirLalu: (m: MusimSt) => string | null; akhirUmum: string | null; kode: string; onPilih: (c: string) => void }) {
+function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih, beku }: { st: MusimSt[]; label: (c: string) => string; terbit: string;
+  akhirLalu: (m: MusimSt) => string | null; akhirUmum: string | null; kode: string; onPilih: (c: string) => void; beku: Set<string> }) {
   const sempit = typeof window !== "undefined" && window.innerWidth < 600;
   const x0 = ts("2026-06-15"), x1 = ts("2026-11-30");
   const kini = ts(terbit) + 864e5, akhir = akhirUmum ? ts(geser(akhirUmum)) + 864e5 : null;
@@ -506,7 +514,7 @@ function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih }: { 
     return {
       tooltip: { formatter: (q: any) => {
         const { y, t, sampai, titik } = q.data.info, m = st[q.value[2]];
-        if (sampai) return `<b>${label(m.code)}</b><br/>Sisa musim 2026 (perkiraan): sampai ${pendek(geser(sampai))}, sama dengan akhir musim tahun lalu`;
+        if (sampai) return `<b>${label(m.code)}</b><br/>Jika mengikuti 2025: di atas 55 sampai ${pendek(geser(sampai))}. Pola kalender, bukan ramalan model`;
         if (titik) return `<b>${label(m.code)}</b><br/>Musim ${y} berakhir ${pendek(t.akhir)}`;
         return `<b>${label(m.code)} · musim ${y}</b><br/>${pendek(t.mulai)} – ${pendek(t.akhir)}${t.berlanjut ? " (masih berlangsung)" : ""}<br/>${t.hari} hari di atas 55 · rata-rata ${fmt(t.rata, 0)} ${UG}`;
       } },
@@ -517,7 +525,8 @@ function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih }: { 
         axisLabel: { fontSize: 11, fontWeight: 650, color: C.ink, formatter: (v: number) => BULAN[new Date(v + 12 * 36e5).getMonth()] } },
       yAxis: [
         { type: "category", inverse: true, data: st.map((m) => label(m.code)), axisTick: { show: false }, axisLine: { show: false },
-          axisLabel: { fontSize: sempit ? 10.5 : 12, color: C.ink, formatter: (v: string, i: number) => (st[i]?.code === kode ? `{b|${v}}` : v), rich: { b: { fontWeight: 800, color: TEAL_INK, fontSize: 12 } } } },
+          axisLabel: { fontSize: sempit ? 10.5 : 12, color: C.ink, formatter: (v: string, i: number) => `${st[i] && beku.has(st[i].code) ? "{f|data beku} " : ""}${st[i]?.code === kode ? `{b|${v}}` : v}`,
+            rich: { b: { fontWeight: 800, color: TEAL_INK, fontSize: 12 }, f: { color: "#8a3b12", backgroundColor: "#fde3cf", borderRadius: 4, padding: [2, 5], fontSize: 9.5, fontWeight: 750 } } } },
         { type: "category", inverse: true, position: "right", data: st.map((_m, i) => `${i}`), axisTick: { show: false }, axisLine: { show: false },
           axisLabel: { show: !sempit, formatter: (v: string) => {
             const m = st[+v], a = m.tahun["2025"]?.rata, b = m.tahun["2026"]?.rata, u = ubah(m);
@@ -551,11 +560,11 @@ function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih }: { 
         markArea: akhir && akhir > kini ? { silent: true, itemStyle: { color: "rgba(232,93,4,0.07)" }, label: { show: false },
           data: [[{ xAxis: kini }, { xAxis: akhir }]] } : undefined,
         markLine: { silent: true, symbol: "none", data: [
-          { xAxis: kini, lineStyle: { color: C.ink, type: "solid", width: 1.2 }, label: { formatter: `kini ${pendek(terbit)}`, position: "end", fontSize: 10.5, fontWeight: 700, color: C.ink } },
-          ...(akhir ? [{ xAxis: akhir, lineStyle: { color: RAMP[5], type: "dashed", width: 1.4 }, label: { formatter: `berakhir ${pendek(geser(akhirUmum!))}`, position: "end", fontSize: 10.5, fontWeight: 800, color: RAMP[5] } }] : []),
+          { xAxis: kini, lineStyle: { color: C.ink, type: "solid", width: 1.2 }, label: { formatter: `kini ${pendek(terbit)}`, position: "start", distance: 4, fontSize: 10.5, fontWeight: 700, color: C.ink } },
+          ...(akhir ? [{ xAxis: akhir, lineStyle: { color: RAMP[5], type: "dashed", width: 1.4 }, label: { formatter: `turun ${pendek(addDays(geser(akhirUmum!), 1))} (2024–2025)`, position: "end", fontSize: 10.5, fontWeight: 800, color: RAMP[5] } }] : []),
         ] } } as any],
     };
-  }, [st, label, terbit, kode, sempit, akhirLalu, akhir, kini, akhirUmum]);
+  }, [st, label, terbit, kode, sempit, akhirLalu, akhir, kini, akhirUmum, beku]);
   return <Chart option={opt} height={st.length * 34 + 78} ariaLabel="Musim asap 2026 per lokasi dibanding 2025, dengan akhir musim tahun lalu"
     onClick={(p) => { const v = p.value as number[] | undefined; if (v && st[v[2]]) onPilih(st[v[2]].code); }} />;
 }

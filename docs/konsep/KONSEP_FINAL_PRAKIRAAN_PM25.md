@@ -79,11 +79,14 @@ Stasiun yang berjauhan berkorelasi 0,99+, tanda data sintetis. Karena itu data l
 ### 3.4 Peringatan pergantian bulan
 
 - Perubahan median bulanan tahun lalu di lokasi itu, dari bulan berjalan ke bulan berikutnya (contoh Palangka Raya–Sampit: masuk November −82%; Pangkalan Bun −75%).
+- Ditampilkan sebagai **arah** ("Turun tajam" ≤ −50%, "Turun" ≤ −15%, "Relatif sama", "Naik", "Naik tajam" ≥ +50%), dengan keterangan "pola 1 tahun (2025) di lokasi ini: −82%". Alasannya: hanya satu tahun analog, dan 2025 tahun ringan (Palangka Raya Okt 2025 = 125, Nov 2025 = 22, sedangkan Okt 2026 = 870 µg/m³).
 - Diberi warna peringatan bila tanggal 1 jatuh dalam 7 hari ke depan. Di tanggal terbit 14 Okt, 1 Nov masih 18 hari lagi, jadi tampil sebagai informasi biasa. Peringatannya muncul di mode "Uji di Tanggal Lain".
 
 ### 3.5 Kasus napas di rumah sakit
 
 Rata-rata kasus 7 hari terakhir × (PM2.5 prakiraan ÷ PM2.5 7 hari terakhir)^(b ÷ ln 2), b per RS dari model dampak halaman Simulasi. Diuji balik pada arsip prakiraan 2026.
+
+**Ekstrapolasi:** PM2.5 tertinggi Palangka Raya sebelum Okt 2026 = 422 µg/m³, sedangkan Okt 2026 rata-rata 870 dan prakiraan sekitar 1.150. Angka kasus di luar rentang data pembentuk rumus, dan rentangnya hanya dari rentang PM (tanpa ketidakpastian koefisien). Catatan ini tertulis di kartu RS.
 
 ---
 
@@ -127,7 +130,7 @@ Alurnya dari yang paling pasti ke yang paling tidak pasti: kapan musim selesai �
 
 ### 5.1 Kartu Musim Asap
 
-Judul: **"Musim Asap Diperkirakan Berakhir 31 Okt, 17 Hari Lagi"** (akhir musim 2025 yang paling umum, dihitung dari hari terbit).
+Judul: **"Pada 2024 dan 2025, Level Turun di 1 Nov"** (akhir musim 2025 yang paling umum + 1 hari). Sub-judul: "Kalau pola dua tahun itu berulang, sisa musim tinggal 17 hari dari 14 Okt. Ini pola kalender data, bukan ramalan model." Kata "diperkirakan berakhir" tidak dipakai (revisi tahap 2, bagian 8.5).
 
 **Tiga angka ringkas di atas grafik:**
 - **10/12** lokasi selesai di 31 Okt pada 2024 dan 2025.
@@ -147,7 +150,7 @@ Judul: **"Musim Asap Diperkirakan Berakhir 31 Okt, 17 Hari Lagi"** (akhir musim 
 | Area oranye muda sampai garis putus "berakhir 31 Okt" | 17 hari sisa musim |
 | Kolom kanan, contoh "90 → 289 ▲221%" | **Rata-rata selama musim** 2025 → 2026, bukan nilai harian; label "baru" untuk lokasi tanpa musim 2025 |
 
-**Kenapa hanya 13 baris dari 24 lokasi:** hanya lokasi yang pernah punya musim di atas 55 pada 2024–2026. **Kenapa 12, bukan 13:** Marunda di atas 55 sepanjang tahun, jadi tidak punya akhir musim. **Dua yang tidak ikut "10/12":** Kototabang (belum punya riwayat) dan Sintang (2024 berakhir sedikit lebih awal).
+**Kenapa hanya 12 baris dari 24 lokasi:** hanya lokasi yang pernah punya musim di atas 55 pada 2024–2026. Marunda di atas 55 sepanjang tahun (bukan musim), jadi dikeluarkan dari linimasa dan disebut di catatan bawah grafik. Banjarbaru diberi tanda **data beku** (sensor beku 7.329 jam; rata-rata musim persis 81 tiga tahun). **Dua yang tidak ikut "10/12":** Kototabang (belum punya riwayat) dan Sintang (2024 berakhir sedikit lebih awal).
 
 Warna ISPU dipakai hanya untuk nilai harian. Linimasa memakai gradasi oranye musim asap (`RAMP` di `theme.ts`).
 
@@ -214,6 +217,8 @@ Tidak ada angka yang disembunyikan. Angka yang lemah tetap ada, hanya diberi lab
 | "Grafik Pangkalan Bun naik 8–14 Okt, bukan tanggal 1." | "Awal musim asap" dihitung dari udara bersih (≤ 55). Pangkalan Bun sudah di atas 55 sejak Agustus; kenaikan 8–14 Okt bertahap dan tidak melewati ambang lonjakan besar. |
 | "Data ini sintetis." | Benar, dan disebut terbuka. Yang bisa dipindahkan ke data nyata adalah metodenya: uji berjalan, pembanding naif, koreksi Holm, kalibrasi rentang. |
 | "Palangka 1 Sep diramal 219, terjadi 421." | Lapis transisi menangkap arah lompatan (dari 95), tidak besarnya, karena musim 2026 jauh lebih parah. Mode "Uji di Tanggal Lain" menampilkan kasus ini apa adanya. |
+| "Apa peran LightGBM kalau unggulnya cuma 0,24 µg/m³?" | Unggul tipis tapi konsisten di 25/25 stasiun. Nilai utama halaman ada di kalender musim dan peringatan pindah bulan, bukan di angka harian. Laporan tidak mengklaim lebih dari itu. |
+| "Kenapa musim selalu 1 Agu–31 Okt persis?" | Itu pola kalender di data (sebagian lokasi mulai persis 1 Agu dan selesai persis 31 Okt), dari 2 tahun pembanding. Karena itu judulnya "Pada 2024 dan 2025, level turun di 1 Nov", bukan ramalan. |
 | "Kenapa tidak modeling ulang?" | Model lain pun tidak bisa mendahului lompatan yang tidak punya tanda. Model yang menghafal pola tanggal 1 akan terlihat bagus tapi overfitting pada data sintetis. |
 | "Kenapa tidak pakai cuaca atau titik api?" | Sudah diuji: tidak ada variabel di dataset yang bergerak sebelum lompatan. |
 | "Apakah November aman?" | Tahun lalu 10 lokasi turun di bawah 55 mulai 1 Nov. Di bawah 55 masih kategori Sedang, bukan Baik, dan itu perkiraan dari pola, bukan model. |
@@ -261,6 +266,20 @@ Semua angka di catatan tim sudah dicocokkan dengan JSON dan **cocok**: 62/76, 27
 5. **Musim makin luas.** Kototabang baru pertama kali di atas 55 pada 2026; delapan lokasi makin parah tiap tahun.
 
 Kalimat yang sama bisa dipakai di laporan BAB III/IV.
+
+### 8.5 Revisi tahap 2 (cek ulang commit `62b2594`)
+
+| # | Masalah menurut tim | Diterapkan |
+|---|---|---|
+| 1 | "Musim berakhir 31 Okt" terbaca sebagai ramalan, padahal pola kalender data dari 2 tahun | Judul kartu "Pada 2024 dan 2025, Level Turun di 1 Nov"; sub-judul "pola kalender data, bukan ramalan model"; garis "turun 1 Nov (2024–2025)"; legenda "sisa musim jika mengikuti 2025" |
+| 2 | "Minggu Depan" membingungkan (prakiraan 15–21 Okt, juri menilai November) | Kepala halaman "Bagaimana Udara Sepekan Setelah Data Terakhir (14 Okt 2026)?"; ⓘ "Disimulasikan per 14 Okt 2026, hari terakhir data" |
+| 3 | "Masuk Nov: −82%" dari 1 tahun analog yang ringan | Angka utama jadi arah ("Turun tajam"), persen pindah ke keterangan "pola 1 tahun (2025)" |
+| 4 | Kasus RS ekstrapolasi | Catatan di kartu RS: "PM2.5 musim 2026 jauh di atas rentang data pembentuk rumus, jadi angka kasus bersifat ekstrapolasi". Batas PM 422 tidak dipakai supaya angka tetap konsisten dengan halaman Simulasi |
+| 5 | Linimasa memuat stasiun bermasalah | Marunda keluar dari linimasa (catatan "di atas 55 sepanjang tahun, bukan musim"); Banjarbaru diberi tanda "data beku" |
+| 6 | Peran LightGBM tipis | Jawaban juri ditambahkan di bagian 7; halaman tidak diubah |
+| Kecil | "10 dari 13" vs "10/12" | Dokumen memakai 10/12 |
+
+**Insight tambahan dari tahap 2:** halaman kini memisahkan dengan jelas tiga jenis informasi: **pola kalender** (kapan level turun, dari 2 tahun data), **prakiraan model** (7 hari, kategori ISPU), dan **ekstrapolasi** (kasus RS di luar rentang data). Juri bisa melihat sendiri mana yang diramal, mana yang pola, dan mana yang perkiraan kasar.
 
 ---
 
