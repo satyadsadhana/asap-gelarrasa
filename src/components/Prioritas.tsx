@@ -104,7 +104,7 @@ export default function Prioritas({ h, m, rr, byCode, sk, per, periodeTahunan }:
 
         <div className="stories">
           <Efisiensi r={r} m={m} outcome={outcome} label={label} nama={nama} hinge={isHinge(m, outcome)} />
-          <Awet tahunan={tahunan} outcome={outcome} K={K} nama={nama} batas={batas} />
+          <Awet tahunan={tahunan} outcome={outcome} K={K} nama={nama} batas={batas} label={label} />
         </div>
 
         <Detail r={r} m={m} outcome={outcome} label={label} nama={nama} batas={batas} hinge={isHinge(m, outcome)} />
@@ -223,7 +223,7 @@ function Efisiensi({ r, m, outcome, label, nama, hinge }: { r: HasilPrioritas; m
 }
 
 /* ---------- Cerita 2: apakah daftar ini awet? (bump chart) ---------- */
-function Awet({ tahunan, outcome, K, nama, batas }: { tahunan: { p: Periode; ds: Dasar[] }[]; outcome: string; K: number; nama: (id: string) => string; batas: boolean }) {
+function Awet({ tahunan, outcome, K, nama, batas, label }: { tahunan: { p: Periode; ds: Dasar[] }[]; outcome: string; K: number; nama: (id: string) => string; batas: boolean; label: string }) {
   const pil = tahunan.map((t) => ({ ...t, pl: pilih(t.ds, outcome, K) }));
   const rank = pil.map((t) => {
     const av = Object.fromEntries(t.ds.map((d) => [d.hid, d.av[outcome]]));
@@ -233,7 +233,7 @@ function Awet({ tahunan, outcome, K, nama, batas }: { tahunan: { p: Periode; ds:
   const ids = [...new Set(pil.flatMap((t) => t.pl.model))];
   const cnt = (id: string) => pil.filter((t) => t.pl.model.includes(id)).length;
   const inti = ids.filter((id) => cnt(id) === pil.length);
-  const baru = ids.filter((id) => pil[pil.length - 1].pl.model.includes(id) && cnt(id) === 1);
+  const baru = ids.filter((id) => pil[pil.length - 1].pl.model.includes(id) && !pil[0].pl.model.includes(id));
   const maxR = Math.max(K + 2, ...ids.flatMap((id) => rank.map((rk) => rk[id] ?? 0)));
 
   // Uji ke depan: pilih di periode i, nilai di periode i+1 (jumlah wilayah sama).
@@ -262,10 +262,11 @@ function Awet({ tahunan, outcome, K, nama, batas }: { tahunan: { p: Periode; ds:
   };
   return (
     <Story flip tone="gambut" title={inti.length ? `${inti.length} dari ${K} Wilayah Tetap Prioritas` : "Daftar Berganti Tiap Periode"}
-      big={`${inti.length}/${K}`} bigNote={inti.length ? `${inti.length <= 3 ? `${daftar(inti.map(nama))} masuk` : "Wilayah ini masuk"} ${K} besar di tiap periode` : `Tidak ada wilayah yang masuk ${K} besar di tiap periode`}
+      big={`${inti.length}/${K}`} bigNote={inti.length ? `${inti.length <= 3 ? daftar(inti.map(nama)) : `${inti.length} wilayah ini`} bertahan di ${K} besar ${pil.length} periode berturut-turut` : `Tidak ada wilayah yang bertahan di ${K} besar`}
       chart={<Chart option={opt} height={320} ariaLabel="Peringkat wilayah per periode" />}>
-      {baru.length ? <p><b>{daftar(baru.map(nama))}</b> baru masuk di {pil[pil.length - 1].p.pendek}. Asap di sana naik tajam tahun itu, jadi daftar lama tidak lagi berlaku.</p> : null}
-      <p className="alok-nota">Peringkat tinggi berarti intervensi di sana paling banyak menyelamatkan kasus, bukan berarti masalahnya belum selesai. Daftar disusun ulang dari data terbaru sebelum setiap musim asap.</p>
+      {inti.length ? <p>Bertahan karena di sanalah asap yang turun paling banyak mencegah {label}.</p> : null}
+      {baru.length ? <p><b>{daftar(baru.map(nama))}</b> menyusul setelah {pil[0].p.pendek}.</p> : null}
+      <p className="alok-nota"><b>Daftar lama masih ampuh?</b></p>
       <div className="alok-uji" aria-label="Uji daftar lama pada periode berikutnya">
         {maju.map((u) => (
           <span key={u.a}>
