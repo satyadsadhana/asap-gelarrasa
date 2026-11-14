@@ -89,3 +89,25 @@
   .kw-grid { grid-template-columns: 1fr; }
   .kw-list ol { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 }
+
+/* ---------- v6: kalender, minggu ini, dampak ---------- */
+.pk-minggu { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; align-items: start; }
+.pk-kosong { padding: 14px 16px; border-radius: 12px; background: #f3f8f8; border: 1px solid var(--line); }
+.pk-kosong b { display: block; font: 650 14px/1.4 var(--font-head, inherit); color: var(--navy); }
+.pk-kosong p { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+.pk-blok h4 { margin: 0 0 4px; font: 650 14px var(--font-head, inherit); color: var(--navy); }
+.pk-kalimat { margin: 0 0 6px; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+.pk-kalimat b { color: var(--navy); }
+.pk-andal { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: #e3f4f2; color: var(--teal-ink); font-size: 11px; font-weight: 650; cursor: help; }
+.pk-legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; font-size: 11.5px; color: var(--ink-soft); }
+.pk-legenda i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
+.pk-legenda i.pudar { background: repeating-linear-gradient(45deg, #d62728 0 3px, #f6c9c9 3px 6px); opacity: .6; }
+.pk-angka { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 6px; }
+.pk-angka span { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.7); border: 1px solid var(--line); font-size: 11.5px; line-height: 1.35; color: var(--ink-soft); }
+.pk-angka b { font: 600 20px/1.1 var(--font-num); color: var(--navy); }
+@media (max-width: 900px) {
+  .pk-minggu { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .pk-angka { grid-template-columns: 1fr; }
+}

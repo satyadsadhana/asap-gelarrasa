@@ -15,7 +15,7 @@ Alur
      sensitivitas bobot, Kupiec, skor Winkler, keandalan peluang, kejadian lonjakan unik.
   6. Model final dilatih dengan seluruh data; ramalan diterbitkan dari tanggal data terakhir.
 
-Keputusan desain (bukti: docs/konsep/KONSEP_PRAKIRAAN_PM25_7_HARI.md)
+Keputusan desain (bukti: docs/konsep/KONSEP_FINAL_PRAKIRAAN_PM25.md)
   - Target = perubahan log dari hari ini; fitur hanya pergerakan relatif. Fitur tingkat, musim,
     cuaca, kimia, dan tetangga sudah diuji dan tidak menambah akurasi 2026 (fitur musim menghafal).
   - Huber loss; hasil akhir = rata-rata model dan menyalin hari ini (bobot 0,5, lihat sensitivitas).
@@ -265,7 +265,13 @@ class Kalibrasi:
         self.sk_glob = {(int(h), bool(m)): mad(g["r"]) for (h, m), g in V.groupby(["h", "musim"])}
         self.sk = {(c, int(h), bool(m)): mad(g["r"]) for (c, h, m), g in V.groupby(["code", "h", "musim"]) if len(g) >= 30}
         V["z"] = V["r"] / [self.skala(c, h, m) for c, h, m in zip(V["code"], V["h"], V["musim"])]
+        if "lintas" not in V:
+            V["lintas"] = False
+        # kuantil terpisah untuk hari lintas bulan (galatnya lebih lebar); kembali ke kuantil biasa bila sampel < 100
         self.z = {(int(h), bool(m)): g["z"].values for (h, m), g in V.groupby(["h", "musim"])}
+        for (h, m, l), g in V.groupby(["h", "musim", "lintas"]):
+            if len(g) >= 100:
+                self.z[(int(h), bool(m), bool(l))] = g["z"].values
         self.q = {k: (float(np.quantile(v, ALFA / 2)), float(np.quantile(v, 1 - ALFA / 2))) for k, v in self.z.items()}
         # bobot gabungan peluang per horizon: dipilih di 2025, pola musiman dari data sebelum 2025
         pb = peluang_bulan(d, "2025-01-01")
@@ -275,19 +281,25 @@ class Kalibrasi:
             ws = np.linspace(0, 1, 21)
             self.bobot_p[int(h)] = float(ws[np.argmin([np.mean((w * pm + (1 - w) * pk - o) ** 2) for w in ws])])
 
+    def kunci(self, h, m, l=False):
+        k = (int(h), bool(m), bool(l))
+        return k if k in self.q else (int(h), bool(m))
+
     def skala(self, c, h, m) -> float:
         return self.sk.get((c, int(h), bool(m)), self.sk_glob[(int(h), bool(m))])
 
     def rentang(self, D: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+        ls = D["lintas"] if "lintas" in D else [False] * len(D)
         k = np.array([self.skala(c, h, m) for c, h, m in zip(D["code"], D["h"], D["musim"])])
-        lo = np.array([self.q[(int(h), bool(m))][0] for h, m in zip(D["h"], D["musim"])])
-        hi = np.array([self.q[(int(h), bool(m))][1] for h, m in zip(D["h"], D["musim"])])
+        lo = np.array([self.q[self.kunci(h, m, l)][0] for h, m, l in zip(D["h"], D["musim"], ls)])
+        hi = np.array([self.q[self.kunci(h, m, l)][1] for h, m, l in zip(D["h"], D["musim"], ls)])
         return D["mu"].values + lo * k, D["mu"].values + hi * k
 
     def p_model(self, D: pd.DataFrame) -> np.ndarray:
         out = []
-        for c, h, m, mu in zip(D["code"], D["h"], D["musim"], D["mu"]):
-            out.append(float(np.mean(self.z[(int(h), bool(m))] * self.skala(c, h, m) > L55 - mu)))
+        ls = D["lintas"] if "lintas" in D else [False] * len(D)
+        for c, h, m, mu, l in zip(D["code"], D["h"], D["musim"], D["mu"], ls):
+            out.append(float(np.mean(self.z[self.kunci(h, m, l)] * self.skala(c, h, m) > L55 - mu)))
         return np.array(out)
 
     @staticmethod
@@ -305,8 +317,9 @@ class Kalibrasi:
         for c in codes:
             out[c] = {}
             for m, nm in ((True, "musim"), (False, "luar")):
-                out[c][nm] = [[round(self.q[(h, m)][0] * self.skala(c, h, m), 4),
-                               round(self.q[(h, m)][1] * self.skala(c, h, m), 4)] for h in HZ]
+                for l, suf in ((False, ""), (True, "_lintas")):
+                    out[c][nm + suf] = [[round(self.q[self.kunci(h, m, l)][0] * self.skala(c, h, m), 4),
+                                         round(self.q[self.kunci(h, m, l)][1] * self.skala(c, h, m), 4)] for h in HZ]
         return out
 
 
@@ -444,6 +457,9 @@ def akurasi(T: pd.DataFrame, V: pd.DataFrame, kal: Kalibrasi, pb_uji: dict, F: p
         ins = (a >= L) & (a <= U)
         r["cakupan80"] = round(float(ins.mean()), 3)
         r["cakupan80_musim"] = round(float(ins[ms].mean()), 3) if ms.any() else None
+        lt = g["lintas"].values.astype(bool) if "lintas" in g else np.zeros(len(g), bool)
+        r["cakupan80_lintas"] = round(float(ins[lt].mean()), 3) if lt.any() else None
+        r["cakupan80_biasa"] = round(float(ins[~lt].mean()), 3) if (~lt).any() else None
         r["kupiec_p"] = kupiec(int((~ins).sum()), len(ins), ALFA)
         r["winkler"] = round(float(np.mean((U - L) + (2 / ALFA) * (L - a) * (a < L) + (2 / ALFA) * (a - U) * (a > U))), 2)
         pc = pd.Series(ins).groupby(g["code"].values).mean()
@@ -661,7 +677,8 @@ def main() -> None:
         for h in HZ:
             mu_h, _ = mu_transisi(L_kini, [code], [akhir], h, X["ly0"].values, gabung(X["ly0"].values, final[h].predict(X[FITUR])))
             mus.append(float(mu_h[0]))
-        D = pd.DataFrame({"code": code, "tgl": akhir, "h": HZ, "musim": musim_kini, "mu": mus})
+        D = pd.DataFrame({"code": code, "tgl": akhir, "h": HZ, "musim": musim_kini, "mu": mus,
+                          "lintas": [(akhir + pd.Timedelta(days=h)).month != akhir.month for h in HZ]})
         lo, hi = kal.rentang(D)
         p = kal.peluang(D, pb_kini)
         hist = F[(F["code"] == code) & (F["tgl"] > akhir - pd.Timedelta(days=30))]
@@ -712,7 +729,7 @@ def main() -> None:
                 "tahun": sorted(g["date"].dt.year.unique().tolist())}
                for c, g in nd.dropna(subset=["pm25"]).groupby("kode_stasiun")]
 
-    meta = {"versi": 4, "terbit": akhir.strftime("%Y-%m-%d"), "batas": BATAS, "horizon": len(HZ), "bobot_model": BOBOT,
+    meta = {"versi": 6, "terbit": akhir.strftime("%Y-%m-%d"), "batas": BATAS, "horizon": len(HZ), "bobot_model": BOBOT,
             "model": "Rata-rata LightGBM (target perubahan log, fitur relatif, Huber) dan menyalin nilai hari ini",
             "rentang": "80%, per stasiun x musim x horizon, dari uji berjalan 2025",
             "peluang": "gabungan peluang model dan pola musiman per stasiun-bulan; bobot per horizon dipilih di 2025",
