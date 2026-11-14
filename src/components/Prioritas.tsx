@@ -176,47 +176,47 @@ function Urutan({ r, outcome, nama, porsi }: { r: HasilPrioritas; outcome: strin
 /* ---------- Cerita 1: paling berasap ≠ paling perlu ---------- */
 function Efisiensi({ r, m, outcome, label, nama, hinge }: { r: HasilPrioritas; m: ModelDampak; outcome: string; label: string; nama: (id: string) => string; hinge: boolean }) {
   const pas = pasanganPenjelas(r, outcome);
-  const pick = new Set(r.cara[0].pilih);
   const ws = r.wilayah.filter((w) => w.beban > 1e-9);
-  const maxP = Math.max(1, ...ws.map((w) => w.kasus[outcome]));
   const eff = (w: { av: Record<string, number>; beban: number }) => (1000 * w.av[outcome]) / w.beban;
   const rrOf = (hid: string) => Math.exp(m.b_per_rs[hid][outcome]);
+  // Urutan asap (rata-rata PM2.5) vs urutan manfaat per µg yang diturunkan.
+  const asapRank = Object.fromEntries([...ws].sort((a, b) => b.pmMean - a.pmMean).map((w, i) => [w.hid, i + 1]));
+  const urut = [...ws].sort((a, b) => eff(b) - eff(a));
+  const terkotor = urut.find((w) => asapRank[w.hid] === 1);
+  const posKotor = terkotor ? urut.indexOf(terkotor) + 1 : 0;
+  const isA = (id: string) => !!pas && id === pas.a.hid, isB = (id: string) => !!pas && id === pas.b.hid;
+  const warnaBar = (id: string) => (isA(id) ? TEAL : isB(id) ? GREY_D : asapRank[id] <= 3 ? "#f2b183" : "#dfe7ea");
+  const maxE = Math.max(1, ...urut.map(eff));
   const opt: EChartsOption = {
-    tooltip: { formatter: (p: any) => { const w = p.data.w; return `<b>${nama(w.hid)}</b><br/>${n0(w.beban)} µg·hari diturunkan<br/>${n0(w.av[outcome])} kasus tercegah<br/>${n0(eff(w))} kasus per 1.000 µg·hari<br/>${n0(w.kasus[outcome])} pasien${hinge ? "" : `<br/>risiko +${fmt(100 * (rrOf(w.hid) - 1), 0)}% per lipat dua`}`; } },
-    grid: { left: 8, right: 28, top: 34, bottom: 34, containLabel: true },
-    xAxis: { type: "value", name: "PM2.5 yang diturunkan (µg·hari)", nameLocation: "middle", nameGap: 26, axisLabel: { formatter: (v: number) => (v >= 1000 ? `${fmt(v / 1000, 0)} rb` : `${v}`) } },
-    yAxis: { type: "value", name: "Kasus tercegah", nameTextStyle: { align: "left" } },
+    tooltip: { trigger: "item", formatter: (p: any) => { const w = urut[p.dataIndex]; return `<b>${nama(w.hid)}</b> · asap urutan ${asapRank[w.hid]}<br/><b>${n0(eff(w))}</b> kasus tercegah per 1.000 µg diturunkan<br/>${n0(w.av[outcome])} kasus dari ${n0(w.beban)} µg·hari${hinge ? "" : `<br/>Kasus +${fmt(100 * (rrOf(w.hid) - 1), 0)}% jika PM2.5 dua kali lipat`}`; } },
+    grid: { left: 4, right: 52, top: 26, bottom: 4, containLabel: true },
+    xAxis: { type: "value", max: maxE * 1.04, show: false },
+    yAxis: { type: "category", inverse: true, data: urut.map((w) => w.hid), axisTick: { show: false }, axisLine: { show: false },
+      axisLabel: { interval: 0, margin: 10, formatter: (id: string) => `{${isA(id) || isB(id) ? "b" : "n"}|${nama(id)}}  {${asapRank[id] <= 3 ? "h" : "t"}|${asapRank[id]}}`,
+        rich: { n: { fontSize: 11.5, color: GREY_D }, b: { fontSize: 12, fontWeight: 800, color: C.ink },
+          t: { fontSize: 10, color: GREY_D, backgroundColor: "#eef3f4", borderRadius: 4, padding: [2, 5], width: 14, align: "center" },
+          h: { fontSize: 10, fontWeight: 800, color: "#8a3b12", backgroundColor: "#fde3cf", borderRadius: 4, padding: [2, 5], width: 14, align: "center" } } } },
+    graphic: [{ type: "text", right: 52, top: 2, style: { text: "kasus tercegah per 1.000 µg", fontSize: 10.5, fill: GREY_D, align: "right" } },
+      { type: "text", left: 4, top: 2, style: { text: "wilayah  ·  urutan asap", fontSize: 10.5, fill: GREY_D } }],
     series: [{
-      type: "scatter",
-      data: ws.map((w) => {
-        const hi = pas && (w.hid === pas.a.hid || w.hid === pas.b.hid);
-        return {
-          value: [w.beban, Math.max(0, w.av[outcome])], w,
-          symbolSize: 9 + 26 * Math.sqrt(w.kasus[outcome] / maxP),
-          itemStyle: { color: pick.has(w.hid) ? TEAL : GREY, borderColor: hi ? C.ink : "#fff", borderWidth: hi ? 2.5 : 1, opacity: 0.92 },
-          label: hi ? { show: true, formatter: nama(w.hid), position: "right" as const, fontSize: 11, fontWeight: 650, color: C.ink, textBorderColor: "#fff", textBorderWidth: 3 } : undefined,
-        };
-      }),
-      z: 5,
-    },
-    ...(pas ? [pas.a, pas.b].map((w, i) => {
-      const s = Math.max(0, w.av[outcome]) / w.beban, xe = Math.max(...ws.map((v) => v.beban)) * 1.02;
-      const ye = Math.min(s * xe, Math.max(...ws.map((v) => v.av[outcome])) * 1.05);
-      return { type: "line" as const, data: [[0, 0], [ye / s, ye]], symbol: "none", silent: true, z: 1,
-        lineStyle: { type: "dashed" as const, width: 1.5, color: i === 0 ? TEAL_INK : GREY_D },
-        endLabel: { show: true, formatter: `${n0(1000 * s)} per 1.000 µg`, color: i === 0 ? TEAL_INK : GREY_D, fontSize: 10.5, fontWeight: 650 } };
-    }) : [])],
+      type: "bar", barWidth: "62%", animationDuration: 700,
+      data: urut.map((w) => ({ value: Math.max(0, eff(w)), itemStyle: { color: warnaBar(w.hid), borderRadius: [0, 4, 4, 0] } })),
+      label: { show: true, position: "right", fontSize: 11, fontFamily: "var(--font-num)", formatter: (p: any) => n0(p.value),
+        color: C.ink, fontWeight: 650 },
+      markLine: undefined,
+    } as any],
   };
   const ratio = pas ? eff(pas.a) / eff(pas.b) : 0;
   return (
     <Story tone="focus" title="Paling Berasap Belum Tentu Paling Perlu Didahulukan"
       big={pas ? `${fmt(ratio, ratio < 10 ? 1 : 0)}×` : undefined}
-      bigNote={pas ? `kasus tercegah per µg di ${nama(pas.a.hid)} dibanding ${nama(pas.b.hid)}` : undefined}
-      chart={<Chart option={opt} height={320} ariaLabel={`Beban polusi vs kasus ${label} tercegah per wilayah`} />}>
+      bigNote={pas ? `lebih banyak kasus tercegah per µg di ${nama(pas.a.hid)} dibanding ${nama(pas.b.hid)}` : undefined}
+      chart={<Chart option={opt} height={urut.length * 26 + 36} ariaLabel={`Kasus ${label} tercegah per 1.000 µg PM2.5 yang diturunkan, per wilayah, dengan urutan asap`} />}>
+      {terkotor && posKotor > 1 && <p>Wilayah paling berasap, <b>{nama(terkotor.hid)}</b>, hanya di urutan <b>{posKotor}</b> dari {urut.length} untuk manfaat per µg. Kotak oranye = 3 wilayah paling berasap.</p>}
       {pas && !hinge
-        ? <p>Polusi yang harus diturunkan mirip, tetapi pasien RS di {nama(pas.b.hid)} kurang peka terhadap PM2.5 (risiko <b>+{fmt(100 * (rrOf(pas.b.hid) - 1), 0)}%</b> vs <b>+{fmt(100 * (rrOf(pas.a.hid) - 1), 0)}%</b> tiap PM2.5 berlipat dua). Ukuran titik = jumlah pasien.</p>
+        ? <p>{nama(pas.a.hid)} unggul atas {nama(pas.b.hid)} karena pasiennya lebih peka: jika PM2.5 dua kali lipat, kasus naik <b>+{fmt(100 * (rrOf(pas.a.hid) - 1), 0)}%</b>, dibanding <b>+{fmt(100 * (rrOf(pas.b.hid) - 1), 0)}%</b> di {nama(pas.b.hid)}.</p>
         : hinge
-          ? <p>Untuk {label}, kepekaan dianggap sama di semua RS, jadi urutan ditentukan jumlah pasien dan paparan. Ukuran titik = jumlah pasien.</p>
+          ? <p>Untuk {label}, kepekaan dianggap sama di semua RS, jadi urutan hanya ditentukan jumlah pasien dan paparan.</p>
           : <p>Dengan {r.kEfektif} wilayah, hampir semua yang terdampak sudah masuk daftar, jadi tidak ada pasangan sebanding untuk dibandingkan. Kurangi jumlah wilayah untuk melihat perbedaannya.</p>}
     </Story>
   );
@@ -261,16 +261,17 @@ function Awet({ tahunan, outcome, K, nama, batas }: { tahunan: { p: Periode; ds:
     })) as any,
   };
   return (
-    <Story flip tone="gambut" title={inti.length ? `${inti.length} Wilayah Selalu Masuk, Sisanya Bergeser` : "Daftar Berganti Tiap Periode"}
-      big={`${inti.length}`} bigNote={inti.length ? `${inti.length <= 3 ? `${daftar(inti.map(nama))}: ` : "wilayah yang "}masuk ${K} besar di ${daftar(pil.map((t) => t.p.pendek))}` : `tidak ada wilayah yang selalu masuk ${K} besar`}
+    <Story flip tone="gambut" title={inti.length ? `${inti.length} dari ${K} Wilayah Tetap Prioritas` : "Daftar Berganti Tiap Periode"}
+      big={`${inti.length}/${K}`} bigNote={inti.length ? `${inti.length <= 3 ? `${daftar(inti.map(nama))} masuk` : "Wilayah ini masuk"} ${K} besar di tiap periode` : `Tidak ada wilayah yang masuk ${K} besar di tiap periode`}
       chart={<Chart option={opt} height={320} ariaLabel="Peringkat wilayah per periode" />}>
-      <p>{baru.length ? <><b>{daftar(baru.map(nama))}</b> baru masuk di {pil[pil.length - 1].p.pendek}. </> : null}Daftar tahun lalu belum tentu cocok tahun ini: perbarui menjelang musim asap.</p>
-      <div className="alok-uji" aria-label="Uji ke depan">
+      {baru.length ? <p><b>{daftar(baru.map(nama))}</b> baru masuk di {pil[pil.length - 1].p.pendek}. Asap di sana naik tajam tahun itu, jadi daftar lama tidak lagi berlaku.</p> : null}
+      <p className="alok-nota">Peringkat tinggi berarti intervensi di sana paling banyak menyelamatkan kasus, bukan berarti masalahnya belum selesai. Daftar disusun ulang dari data terbaru sebelum setiap musim asap.</p>
+      <div className="alok-uji" aria-label="Uji daftar lama pada periode berikutnya">
         {maju.map((u) => (
-          <span key={u.a} className={u.kosong ? "" : u.beda < -0.02 ? "neg" : u.beda > 0.02 ? "pos" : ""}>
-            <small>Daftar {u.a} dipakai {u.b}</small>
+          <span key={u.a}>
+            <small>Daftar {u.a} diuji di {u.b}</small>
             <b>{u.kosong ? "–" : Math.abs(u.beda) < 0.02 ? "Setara" : `${u.beda > 0 ? "+" : "−"}${fmt(Math.abs(100 * u.beda), 0)}%`}</b>
-            <small>vs cara {batas ? "paling berasap" : "terberat"}</small>
+            <small>dibanding memilih yang {batas ? "paling berasap" : "terberat"}</small>
           </span>
         ))}
       </div>
