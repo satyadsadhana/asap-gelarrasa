@@ -2,6 +2,7 @@
 
 Dashboard interaktif kualitas udara dan dampaknya pada kesehatan masyarakat di 27 wilayah Indonesia. Dibuat untuk cabang **Dashboard Analysis Gelar Rasa 2026** (Preliminary Round), dengan tema *"From Roots to Clarity, Revealing Meaningful Insight Through Data"*.
 
+**Dashboard:** _link Vercel diisi setelah deploy_ · **Repo:** https://github.com/satyadsadhana/asap-gelarrasa
 
 ## Isi dashboard
 
@@ -13,7 +14,8 @@ Dashboard interaktif kualitas udara dan dampaknya pada kesehatan masyarakat di 2
 | **Faktor Pemicu** | Peran musim/episode, lokasi, lalu lintas, dan cuaca |
 | **Dampak Kesehatan** | Hubungan PM2.5 dengan kunjungan rumah sakit (ISPA balita, kardiovaskular, kematian) |
 | **Jaringan Pemantauan** | Keandalan stasiun dan masalah data yang tersembunyi |
-| **Simulasi & Rekomendasi** | Simulator kebijakan (batas PM2.5 → kasus yang bisa dicegah) dan kartu rekomendasi |
+| **Simulasi & Rekomendasi** (`/aksi`) | Simulator kebijakan (batas PM2.5 → kasus yang bisa dicegah), **Wilayah Mana yang Didahulukan?** (alokasi intervensi: peta + daftar prioritas, efisiensi per µg, uji daftar antartahun), dan Tujuh Langkah |
+| **Prakiraan** (`/prakiraan`) | Pola musim asap per lokasi (2024–2026), kondisi sepekan setelah data terakhir (14 Okt 2026) dalam kategori ISPU, peringatan pergantian bulan, perkiraan kasus napas di RS, dan uji keandalan prakiraan |
 | **Tentang Data** | Sumber, aturan pembersihan, dan catatan metodologi |
 
 Fitur pendukung: filter global (Periode, Pulau, Kawasan, Acuan), **Stasiun Pilihan** (maks. 3, tersimpan di URL), drawer Profil Stasiun, Tur Terpandu, dan panel "Temuan utama" di tiap halaman.
@@ -46,7 +48,7 @@ Butuh Node.js 18 atau lebih baru.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # http://localhost:5173 (port bawaan Vite; berpindah otomatis bila terpakai)
 ```
 
 Build produksi:
@@ -72,7 +74,16 @@ src/lib/           pemuatan data, format angka, simulator, token tema
 - **Dataset panitia** DA Gelar Rasa 2026: data kualitas udara AQMS per jam (sintetis) dan data rumah sakit. Tidak ada dataset lain yang dipakai dalam analisis.
 - **Batas provinsi**: [GADM](https://gadm.org) versi 4.1 level 1, disederhanakan, hanya sebagai latar peta.
 
-File JSON di `public/data/` dihasilkan dari notebook analisis (pembersihan data, agregasi, dan model dampak dua tahap) yang disimpan terpisah dari repo ini.
+### Asal tiap file JSON (reproduksi)
+
+| File di `public/data/` | Dibuat oleh | Ada di repo? |
+|---|---|---|
+| `prakiraan_pm25.json`, `prakiraan_verifikasi.json`, `prakiraan_arsip.json` | `scripts/prakiraan/prakiraan.py --pakai-setelan` | Ya |
+| `prakiraan_v6.json` | `scripts/prakiraan/tambahan_v6.py` | Ya |
+| Angka halaman Alokasi (prioritas wilayah) | Dihitung langsung di browser oleh `src/lib/prioritas.ts` dari `hospital_daily.json`, `model_dampak.json`, `rr.json` (rumus sama dengan simulator `src/lib/sim.ts`) | Ya (kode); input dari notebook |
+| `priority.json` (skor risiko stasiun di halaman Jaringan, **bukan** Alokasi) dan file JSON lain | Notebook analisis (pembersihan, agregasi, model dampak dua tahap) | **Belum**, notebook disimpan terpisah |
+
+Konsep lengkap dua fitur utama: [Prakiraan](docs/konsep/KONSEP_FINAL_PRAKIRAAN_PM25.md) · [Alokasi Intervensi](docs/konsep/KONSEP_FINAL_OPTIMASI_ALOKASI_INTERVENSI.md).
 
 ## Aturan untuk kontributor dan asisten AI (Claude)
 
