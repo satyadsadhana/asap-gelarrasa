@@ -81,7 +81,15 @@ src/lib/           pemuatan data, format angka, simulator, token tema
 | `prakiraan_pm25.json`, `prakiraan_verifikasi.json`, `prakiraan_arsip.json` | `scripts/prakiraan/prakiraan.py --pakai-setelan` | Ya |
 | `prakiraan_v6.json` | `scripts/prakiraan/tambahan_v6.py` | Ya |
 | Angka halaman Alokasi (prioritas wilayah) | Dihitung langsung di browser oleh `src/lib/prioritas.ts` dari `hospital_daily.json`, `model_dampak.json`, `rr.json` (rumus sama dengan simulator `src/lib/sim.ts`) | Ya (kode); input dari notebook |
-| `priority.json` (skor risiko stasiun di halaman Jaringan, **bukan** Alokasi) dan file JSON lain | Notebook analisis (pembersihan, agregasi, model dampak dua tahap) | **Belum**, notebook disimpan terpisah |
+| `model_dampak.json`, `angka_kunci.json` | `notebooks/01_deep_analysis.ipynb` (bagian 5 dan 7) | Ya |
+| `priority.json` (skor risiko stasiun di halaman Jaringan, **bukan** Alokasi) | `notebooks/01_deep_analysis.ipynb`: `skor_risiko` = rata-rata peringkat persentil dari rata-rata PM2.5, hari > 150, dan perubahan % antartahun, × 100; digabung dengan hari valid, grade, dan kategori dari rapor kualitas data | Ya (perhitungan); notebook belum mengekspor file JSON-nya |
+| File JSON lain (termasuk `hospital_daily.json`, `rr.json`) | Notebook analisis yang sama (pembersihan, agregasi, model dampak dua tahap) | Perhitungannya ya; langkah ekspor ke JSON belum semuanya ada di notebook |
+
+### Notebook analisis
+
+`notebooks/01_deep_analysis.ipynb` berisi seluruh analisis yang mendasari dashboard: perbaikan format dan kualitas data, Q1 kondisi udara (baku mutu, ISPU, IKU, tren, tipologi), Q2 waktu dan wilayah kritis, Q3 faktor pemicu (model M2, *pollution rose*), Q4 dampak kesehatan (Poisson, model ambang, model dua tahap M3), Q5 jaringan pemantauan, dan Q6 simulasi. Hasil sel ikut tersimpan, jadi bisa dibaca tanpa dijalankan.
+
+Untuk menjalankan ulang: notebook mencari folder `Dataset/` (data mentah panitia, sama isinya dengan `data/` di repo ini) di folder kerja atau satu tingkat di atasnya, dan menulis hasil ke `data/processed/`.
 
 Konsep lengkap dua fitur utama: [Prakiraan](docs/konsep/KONSEP_FINAL_PRAKIRAAN_PM25.md) · [Alokasi Intervensi](docs/konsep/KONSEP_FINAL_OPTIMASI_ALOKASI_INTERVENSI.md).
 
