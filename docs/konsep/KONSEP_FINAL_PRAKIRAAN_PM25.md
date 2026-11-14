@@ -105,7 +105,7 @@ Alurnya satu arah: satu lokasi minggu depan → dampaknya ke rumah sakit → kap
   - Kotak H+2 ke atas bergaris putus karena keunggulannya belum lolos uji Holm.
 - **Dampak RS.** Judul memuat selisih kasus 7 hari. Rumus sama dengan halaman Simulasi: kasus × (PM baru ÷ PM kini)^(b ÷ ln 2).
 - **Musim: linimasa musim asap.** Kalender bulanan diganti karena datanya berbentuk tangga (hari di atas 55 hampir selalu 0 atau penuh sebulan), jadi kalender hanya menghasilkan blok seragam dan kolom Jan–Jun kosong.
-  - Tiap lokasi punya tiga batang (2024, 2025, 2026 paling tebal). Batang = periode PM2.5 di atas 55 (hari di atas 55 berurutan, celah ≤ 10 hari digabung). Warna = kategori ISPU rata-rata selama musim. Kotak putus = sisa musim 2026 sampai tanggal akhir musim tahun lalu. Garis vertikal = hari terbit.
+  - Tiap lokasi punya tiga batang (2024, 2025, 2026 paling tebal). Batang = periode PM2.5 di atas 55 (hari di atas 55 berurutan, celah ≤ 10 hari digabung). Warna = gradasi oranye musim asap (RAMP di theme.ts) menurut rata-rata selama musim: 55–70, 70–100, 100–150, 150–250, ≥ 250 µg/m³. Warna ISPU tetap hanya untuk nilai harian. Kotak putus = sisa musim 2026 sampai tanggal akhir musim tahun lalu. Garis vertikal = hari terbit.
   - Angka di kanan = rata-rata musim 2024, 2025, 2026.
   - Judul: "Musim Asap Diperkirakan Berakhir 31 Okt, 17 Hari Lagi" (akhir musim 2025 yang paling umum, dihitung dari hari terbit).
   - Tiga temuan yang langsung terbaca dan ditulis di catatan:

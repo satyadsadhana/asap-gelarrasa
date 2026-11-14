@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { EChartsOption } from "echarts";
 import Chart from "../components/Chart";
 import { Card, Kpi, Page, Story } from "../components/Layout";
@@ -6,7 +6,7 @@ import { DotsViz } from "../components/Viz";
 import { useData } from "../lib/data";
 import { BULAN, fmt, fmtDate, UG } from "../lib/format";
 import { useApp } from "../lib/state";
-import { C, ISPU_COL, ISPU_LAB, ispuCat, RAMP } from "../lib/theme";
+import { C, ISPU_COL, ISPU_LAB, ISPU_ON, ispuCat, RAMP } from "../lib/theme";
 
 /* ---------- bentuk data (scripts/prakiraan/prakiraan.py v6 dan tambahan_v6.py) ---------- */
 type Kelas = "rendah" | "sedang" | "tinggi";
@@ -182,6 +182,7 @@ export default function Q7Prakiraan() {
         <Card title={mode === "terbit" || besok.akt == null ? `${label(sel)}: ${ISPU_LAB[ispuIdx(besok.nilai)]} ${mode === "terbit" ? "Besok" : `pada ${pendek(besok.tgl)}`}`
           : `${label(sel)} ${pendek(besok.tgl)}: Diramal ${fmt(besok.nilai, 0)}, Terjadi ${fmt(besok.akt, 0)}`}
           sub={skillSel != null ? <>Sepanjang 2026, prakiraan besok di lokasi ini <b>{pct(skillSel)} lebih tepat</b> dari menyalin nilai hari ini. Garis teal = yang diramal sehari sebelumnya.</> : undefined}>
+          <Angka s={sel} ulang={mode === "ulang"} />
           <Pilih st={daftar} kode={kode} onPilih={setPilih} label={label} />
           <div className="pk-bar">
             <div className="kw-mode" role="tablist" aria-label="Mode prakiraan">
@@ -202,7 +203,7 @@ export default function Q7Prakiraan() {
                 <li key={x.tgl} className={U[x.h - 1]?.nyata ? "" : "lemah"} style={{ borderTopColor: ISPU_COL[c] }}>
                   <small>{hariKe(x.tgl)} {pendek(x.tgl)}</small>
                   <b>{fmt(x.nilai, 0)}</b>
-                  <em style={{ color: c >= 3 ? ISPU_COL[c] : C.ink }}>{ISPU_LAB[c]}</em>
+                  <em className="pk-kat" style={{ background: ISPU_COL[c], color: ISPU_ON[c] }}>{ISPU_LAB[c]}</em>
                   {x.akt != null ? <span className="akt">terjadi {fmt(x.akt, 0)}</span> : <span>{fmt(x.lo, 0)}–{fmt(x.hi, 0)}</span>}
                 </li>
               );
@@ -219,13 +220,14 @@ export default function Q7Prakiraan() {
         </Card>
 
         <Card title={akhirUmum && sisa != null && sisa > 0 ? `Musim Asap Diperkirakan Berakhir ${pendek(geser(akhirUmum))}, ${sisa} Hari Lagi` : "Musim Asap per Lokasi"}
-          sub="Tiap lokasi tiga batang: 2024, 2025, 2026 (tebal). Batang = periode PM2.5 di atas 55; warna = rata-rata selama musim; kotak putus = sisa musim menurut tahun lalu. Angka kanan = rata-rata 2024, 2025, 2026."
+          sub="Batang = periode PM2.5 di atas 55. Tiap lokasi: 2024, 2025, 2026 (paling tebal). Makin gelap, makin parah."
           note={<>{akhirUmum && <>Akhir musim sama pada 2024 dan 2025 di {akhirSama} dari {musimIni.length} lokasi yang sedang musim asap. </>}
             {naik.length > 0 && terNaik && <>Musim 2026 lebih parah dari 2025 di {naik.length} lokasi; terbesar {labelKode(terNaik.code)} ({fmt(terNaik.tahun["2025"]!.rata!, 0)} → {fmt(terNaik.tahun["2026"]!.rata!, 0)}). </>}
             {baru.map((m) => <span key={m.code}>{labelKode(m.code)} pertama kali di atas 55 sejak {pendek(m.tahun["2026"]!.mulai!)}. </span>)}</>}>
           <Linimasa st={musimSt} label={labelKode} terbit={pk.terbit} akhirLalu={akhirLalu} kode={kode} onPilih={setPilih} />
           <div className="pk-legenda" aria-label="Kategori rata-rata musim">
-            {[2, 3, 4].map((i) => <span key={i}><i style={{ background: ISPU_COL[i] }} />{ISPU_LAB[i]}</span>)}
+            <b className="pk-leg-judul">Rata-rata selama musim ({UG})</b>
+            {MUSIM_LAB.map((l, i) => <span key={l}><i style={{ background: MUSIM_COL[i] }} />{l}</span>)}
             <span><i className="putus" />sisa musim (perkiraan)</span>
           </div>
         </Card>
@@ -260,6 +262,31 @@ function Lencana({ k }: { k?: Kualitas }) {
     "pernah beku": "sensor pernah membeku (dibersihkan)", "banyak interpolasi": "banyak jam kosong yang diisi", "data bolong": "banyak hari tanpa data",
   };
   return <span className="pk-badges">{k.lencana.filter((l) => l !== "sinyal kembar").map((l) => <i key={l} title={arti[l] ?? l}>{l}</i>)}</span>;
+}
+
+/* ---------- angka utama lokasi terpilih ---------- */
+function Angka({ s, ulang }: { s: Tampil; ulang: boolean }) {
+  const b = s.hari[0], c = ispuIdx(b.nilai);
+  const pk = s.hari.reduce((a, x) => (x.nilai > a.nilai ? x : a), s.hari[0]);
+  const item = (k: string, v: string, n: ReactNode, warna?: number) => (
+    <div className="pk-angka-item">
+      <small>{k}</small>
+      <b>{v}<span className="u">{UG}</span></b>
+      <span className="n">{warna != null && <i style={{ background: ISPU_COL[warna] }} />}{n}</span>
+    </div>);
+  if (ulang && b.akt != null) {
+    const ms = Math.abs(b.nilai - b.akt) / Math.max(b.akt, 1);
+    return <div className="pk-angka-baris">
+      {item(`Diramal untuk ${pendek(b.tgl)}`, fmt(b.nilai, 0), ISPU_LAB[c], c)}
+      {item("Yang terjadi", fmt(b.akt, 0), ISPU_LAB[ispuIdx(b.akt)], ispuIdx(b.akt))}
+      {item("Selisih", `${fmt(ms * 100, 0)}%`, b.akt > b.nilai ? "terjadi lebih tinggi" : "terjadi lebih rendah")}
+    </div>;
+  }
+  return <div className="pk-angka-baris">
+    {item(`Besok, ${hariKe(b.tgl)} ${pendek(b.tgl)}`, fmt(b.nilai, 0), ISPU_LAB[c], c)}
+    {item("Puncak 7 hari", fmt(pk.nilai, 0), `${hariKe(pk.tgl)} ${pendek(pk.tgl)} · ${ISPU_LAB[ispuIdx(pk.nilai)]}`, ispuIdx(pk.nilai))}
+    {item("Rentang 80% besok", `${fmt(b.lo, 0)}–${fmt(b.hi, 0)}`, "8 dari 10 hari jatuh di sini")}
+  </div>;
 }
 
 /* ---------- pemilih lokasi: diurutkan dari terburuk, warna = kategori besok ---------- */
@@ -420,6 +447,10 @@ function CaraKerja({ vf, sb }: { vf: Verif; sb: Verif["struktur_bulanan"] }) {
 
 /* ---------- linimasa musim asap: periode PM2.5 > 55 per lokasi, 2024 / 2025 / 2026 ---------- */
 const TAHUN3 = ["2024", "2025", "2026"] as const;
+const MUSIM_BATAS = [70, 100, 150, 250];
+const MUSIM_COL = [RAMP[1], RAMP[2], RAMP[3], RAMP[4], RAMP[5]];
+const MUSIM_LAB = ["55–70", "70–100", "100–150", "150–250", "≥ 250"];
+const binMusim = (v: number) => MUSIM_BATAS.filter((b) => v >= b).length;
 const geser = (iso: string) => `2026${iso.slice(4)}`;
 const ts = (iso: string) => Date.parse(iso + "T00:00:00Z");
 
@@ -433,10 +464,10 @@ function Linimasa({ st, label, terbit, akhirLalu, kode, onPilih }: { st: MusimSt
       const t = m.tahun[y];
       if (!t?.mulai || !t.akhir || t.rata == null) return;
       const a = Math.max(ts(geser(t.mulai)), x0), b = Math.min(ts(geser(t.akhir)) + 864e5, x1);
-      data.push({ value: [a, b, yi, li, ispuIdx(t.rata), 0], info: { y, t, sepanjang: t.mulai.endsWith("01-01") && (t.akhir.endsWith("12-31") || t.berlanjut) } });
+      data.push({ value: [a, b, yi, li, binMusim(t.rata), 0], info: { y, t, sepanjang: t.mulai.endsWith("01-01") && (t.akhir.endsWith("12-31") || t.berlanjut) } });
       if (y === "2026" && t.berlanjut) {
         const e = akhirLalu(m);
-        if (e && ts(geser(e)) > ts(t.akhir)) data.push({ value: [ts(t.akhir) + 864e5, Math.min(ts(geser(e)) + 864e5, x1), yi, li, ispuIdx(t.rata), 1], info: { y, t, sampai: e } });
+        if (e && ts(geser(e)) > ts(t.akhir)) data.push({ value: [ts(t.akhir) + 864e5, Math.min(ts(geser(e)) + 864e5, x1), yi, li, binMusim(t.rata), 1], info: { y, t, sampai: e } });
       }
     }));
     return {
@@ -446,7 +477,7 @@ function Linimasa({ st, label, terbit, akhirLalu, kode, onPilih }: { st: MusimSt
         return `<b>${label(m.code)} ${y}</b><br/>${pendek(t.mulai)} – ${pendek(t.akhir)}${t.berlanjut ? " (masih berlangsung)" : ""}<br/>${t.hari} hari di atas 55 · rata-rata ${fmt(t.rata, 0)} ${UG}<br/>${ISPU_LAB[ispuIdx(t.rata)]}`;
       } },
       grid: { left: 8, right: sempit ? 8 : 112, top: 30, bottom: 24, containLabel: true },
-      graphic: sempit ? [] : ([["2026", 8], ["2025", 46], ["2024", 80]] as const).map(([t, r]) => ({ type: "text", right: r, top: 8, style: { text: t, fontSize: 10.5, fontWeight: 650, fill: t === "2026" ? C.ink : "#8a979c" } })),
+      graphic: sempit ? [] : ([["2026", 2], ["2025", 38], ["2024", 72]] as const).map(([t, r]) => ({ type: "text", right: r, top: 8, style: { text: t, fontSize: 10.5, fontWeight: 650, fill: t === "2026" ? C.ink : "#8a979c" } })),
       xAxis: { type: "time", min: x0, max: x1, position: "top", splitNumber: 6, axisLine: { show: false }, axisTick: { show: false },
         splitLine: { show: true, lineStyle: { color: "#eef2f3" } },
         axisLabel: { fontSize: 11, fontWeight: 600, color: C.ink, formatter: (v: number) => BULAN[new Date(v + 12 * 36e5).getMonth()] } },
@@ -463,9 +494,9 @@ function Linimasa({ st, label, terbit, akhirLalu, kode, onPilih }: { st: MusimSt
           const a = api.coord([api.value(0), api.value(2)]), b = api.coord([api.value(1), api.value(2)]);
           const band = api.size([0, 1])[1], li = api.value(3), proj = api.value(5) === 1;
           const h = li === 2 ? band * 0.3 : band * 0.16, top = a[1] - band * 0.4 + (li === 0 ? 0 : li === 1 ? band * 0.22 : band * 0.46);
-          const col = ISPU_COL[api.value(4)];
+          const col = MUSIM_COL[api.value(4)];
           return { type: "rect", shape: { x: a[0], y: top, width: Math.max(2, b[0] - a[0]), height: h, r: 2 },
-            style: proj ? { fill: "rgba(0,0,0,0)", stroke: col, lineWidth: 1.5, lineDash: [4, 3] } : { fill: col, opacity: li === 2 ? 1 : li === 1 ? 0.6 : 0.4 } };
+            style: proj ? { fill: "rgba(0,0,0,0)", stroke: col, lineWidth: 1.5, lineDash: [4, 3] } : { fill: col, opacity: li === 2 ? 1 : 0.85 } };
         },
         markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "solid", width: 1 },
           label: { formatter: `kini ${pendek(terbit)}`, position: "end", fontSize: 10.5, fontWeight: 650, color: C.ink }, data: [{ xAxis: ts(terbit) + 864e5 }] } } as any],
@@ -506,7 +537,7 @@ function ujiOpt(Q: Kualitas[], nama: (c: string) => string): EChartsOption {
     grid: { left: 8, right: 24, top: 10, bottom: 30, containLabel: true },
     xAxis: { type: "value", min: (v: any) => Math.min(-5, Math.floor(v.min / 5) * 5), name: "% galat lebih kecil (besok)", nameLocation: "middle", nameGap: 22, axisLabel: { formatter: (v: number) => `${v}%` } },
     yAxis: { type: "category", data: rows.map((q) => nama(q.code)), axisTick: { show: false }, axisLabel: { fontSize: 10.5, color: C.ink } },
-    series: [{ type: "scatter", data: rows.map((q) => +((q.skill_h1 ?? 0) * 100).toFixed(1)), symbolSize: 9, itemStyle: { color: TEAL_INK },
+    series: [{ type: "scatter", data: rows.map((q, i) => ({ value: +((q.skill_h1 ?? 0) * 100).toFixed(1), label: { show: i === 0 || i === rows.length - 1, position: "right", formatter: (v: any) => `${fmt(v.value, 0)}%`, fontSize: 11, fontWeight: 700, color: TEAL_INK } })), symbolSize: 10, itemStyle: { color: TEAL_INK, borderColor: "#fff", borderWidth: 1.5 },
       markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "solid", width: 1 }, label: { formatter: "sama dengan menyalin", position: "insideEndTop", fontSize: 10.5 }, data: [{ xAxis: 0 }] } }] as any,
   };
 }
