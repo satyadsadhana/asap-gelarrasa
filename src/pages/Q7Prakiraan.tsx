@@ -240,7 +240,7 @@ export default function Q7Prakiraan() {
           <p className="note">Kotak bergaris putus: belum terbukti lebih tepat dari menyalin hari ini.
             {sel.kembar && <> Data Palangka Raya dan Sampit di sumber hampir identik (korelasi 0,99995), jadi ditampilkan sebagai satu lokasi.</>} <Lencana k={vf.kualitas.find((q) => q.code === sel.code)} /></p>
           <div className="pk-temuan">
-            <b>{vf.struktur_bulanan.awal_lonjakan_tgl1} dari {vf.struktur_bulanan.awal_lonjakan} lonjakan dimulai tanggal 1.</b>
+            <b>{vf.struktur_bulanan.awal_lonjakan_tgl1} dari {vf.struktur_bulanan.awal_lonjakan} awal musim asap jatuh di tanggal 1.</b>
             <span>Hari-hari sebelumnya tidak memberi tanda, jadi angka harian tidak bisa mendahuluinya. Yang bisa dipegang: kapan musim mulai dan selesai, dan berapa hari di atas 55.</span>
           </div>
         </Card>

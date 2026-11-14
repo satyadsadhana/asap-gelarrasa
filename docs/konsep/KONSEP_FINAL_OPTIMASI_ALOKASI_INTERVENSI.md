@@ -1,6 +1,6 @@
-# Konsep Final v3: Prioritas Intervensi
+# Konsep Final v4: Prioritas Intervensi
 
-**Status:** v3, menggantikan v2 · 13 November 2026
+**Status:** v4, menggantikan v3 · 14 November 2026 · commit `ae94f7f`
 **Nama di dashboard:** "Wilayah Mana yang Didahulukan?"
 **Lokasi:** halaman Simulasi & Rekomendasi (`/aksi`), setelah tabel per penyakit, sebelum Tujuh Langkah
 **Berkas:** `src/components/Prioritas.tsx`, `src/lib/prioritas.ts`, `src/v4-prio.css`
@@ -12,7 +12,14 @@
   - Kota Jambi −582;
   - Palangka Raya −287.
 
-**Yang berubah dari v2:**
+**Yang berubah dari v3 (14 Nov 2026):**
+- Cerita 1 diganti dari grafik sebar menjadi **batang terurut** "kasus tercegah per 1.000 µg", dengan urutan asap di samping nama. Grafik sebar sulit dibaca dan tidak langsung memperlihatkan bahwa wilayah paling berasap tidak di atas.
+- Cerita 2 berganti judul jadi **"{n} dari {K} Wilayah Tetap Prioritas"**. "Selalu Masuk" terbaca seperti masalahnya belum selesai.
+- Warna gambut di bump chart kini untuk **semua wilayah yang tidak ada di daftar periode pertama tetapi ada di periode terakhir**. Sebelumnya hanya yang baru masuk di periode terakhir, sehingga Sampit dan Palangka Raya (Kematian) tampil abu-abu padahal naik ke peringkat 1–2.
+- Cip uji ke depan tanpa warna merah/hijau, dengan label "Daftar 2024 diuji di 2025, dibanding memilih yang paling berasap".
+- Teks semua cerita dipangkas jadi kalimat pendek yang menyesuaikan penyakit terpilih.
+
+**Yang berubah dari v2 (v3):**
 - Blok "Coba Tebak Dulu" dihapus. Ia memperlambat pembaca tanpa menambah informasi.
 - Teks dipangkas. Setiap blok kini satu judul temuan, satu angka besar, satu kalimat.
 - Label "Stabil / Cukup Stabil / Belum Pasti" diganti satu lencana **belum pasti**, hanya muncul bila perlu (bagian 3).
@@ -44,8 +51,8 @@ Bagian ini meminjam pola yang sudah ada di halaman lain, jadi pembaca tidak perl
 | Kepala | `sec-head` + ⓘ | Judul, subjudul "23 wilayah · kebijakan · periode", pilihan penyakit dan jumlah wilayah | ISPA balita, 5 wilayah |
 | 1 | Jalur temuan (`Flow` + 3 `Kpi`) | **Berapa** · **Dibanding cara biasa** · **Kapan** | 4.083 · +20% · Agu–Okt |
 | 2 | `Card` | **Di mana**: peta + daftar berbatang dengan garis potong | "5 Wilayah, 71% Manfaat" |
-| 3 | `Story` (nada fokus) | **Kenapa bukan yang paling berasap** | 3,3× (Sintang vs Sampit) |
-| 4 | `Story` (dibalik, nada gambut) | **Apakah daftar ini awet** | 2 wilayah inti; uji ke depan +9% / −4% |
+| 3 | `Story` (nada fokus) | **Kenapa bukan yang paling berasap** | 3,3× (Sintang vs Sampit); Talang Betutu (paling berasap) urutan 7 dari 13 per µg |
+| 4 | `Story` (dibalik, nada gambut) | **Apakah daftar ini awet** | 2/5 wilayah tetap prioritas; uji ke depan +9% / −4% |
 | 5 | "Telusuri Lebih Dalam" | Tabel tiga faktor dan tiga cara memilih | Tertutup |
 
 Hubungan dengan bab lain tetap:
@@ -88,34 +95,57 @@ Hubungan dengan bab lain tetap:
   - Garis putus-putus setelah baris ke-K: "71% manfaat di atas garis ini". Garis ini menggantikan Kurva Manfaat v2: pembaca melihat sekaligus siapa yang masuk dan berapa porsinya.
 
 ### Cerita 1: "Paling Berasap Belum Tentu Paling Perlu Didahulukan"
-- **Angka besar:** 3,3×, yaitu kasus tercegah per µg di Sintang dibanding Sampit.
-- **Grafik:**
-  - Sebar: x = PM2.5 yang diturunkan (µg·hari), y = kasus tercegah, ukuran = jumlah pasien.
-  - **Dua garis putus-putus dari titik nol** menembus Sintang dan Sampit. Kemiringannya adalah "kasus per µg": 185 vs 57 per 1.000 µg·hari. Pembaca melihat sendiri bahwa polusinya mirip, tetapi hasilnya jauh berbeda.
-- **Satu kalimat:** pasien RS di Sampit kurang peka terhadap PM2.5 (risiko +33% vs +110% tiap PM2.5 berlipat dua).
+
+**Pertanyaan:** kenapa daftar prioritas tidak sama dengan daftar wilayah paling berasap?
+
+- **Angka besar:** 3,3×, yaitu lebih banyak kasus tercegah per µg di Sintang dibanding Sampit.
+- **Grafik: batang horizontal terurut.**
+  - Panjang batang = kasus tercegah per 1.000 µg·hari PM2.5 yang diturunkan (efisiensi). Paling efisien di atas.
+  - Di samping nama ada kotak **urutan asap** (1 = rata-rata PM2.5 tertinggi). Tiga wilayah paling berasap kotaknya oranye, batangnya oranye muda.
+  - Sintang (teal) dan Sampit (abu tua) disorot sebagai pasangan pembanding; wilayah lain abu-abu muda.
+  - Tooltip: urutan asap, kasus per 1.000 µg, total kasus dan beban, kepekaan RS.
+- **Dua kalimat** (default ISPA balita):
+  1. "Wilayah paling berasap, **Talang Betutu**, hanya di urutan **7** dari 13 untuk manfaat per µg. Kotak oranye = 3 wilayah paling berasap."
+  2. "Sintang unggul atas Sampit karena pasiennya lebih peka: jika PM2.5 dua kali lipat, kasus naik **+110%**, dibanding **+33%** di Sampit."
+- **Kenapa grafik sebar v3 diganti:** pembaca harus membandingkan sudut dua garis, label tertutup lingkaran, dan pesan "paling berasap tidak di atas" tidak terlihat. Batang terurut + urutan asap menampilkan pesan itu langsung.
+- **Siapkan untuk juri:** Talang Betutu tetap prioritas nomor 1 di daftar atas karena **total** kasus tercegahnya paling besar (pasien banyak, musim panjang). Cerita ini mengukur manfaat **per µg**, bukan total. Daftar prioritas memakai total; cerita ini menjelaskan kenapa urutan asap saja tidak cukup.
 - **Pemilihan pasangan otomatis:**
   - A masuk daftar, B tidak.
   - Beban polusi keduanya mirip (rasio 0,6–1,67).
   - Selisih efisiensi terbesar, minimal 1,5×.
 - **Bila tidak ada pasangan:**
-  - Kardiovaskular dan kematian memakai satu koefisien untuk semua RS. Kalimatnya menjelaskan bahwa urutan ditentukan jumlah pasien dan paparan.
+  - Kardiovaskular dan kematian memakai satu koefisien untuk semua RS. Kalimatnya: "kepekaan dianggap sama di semua RS, jadi urutan hanya ditentukan jumlah pasien dan paparan."
   - Bila K besar sehingga hampir semua wilayah sudah masuk, kalimatnya menyarankan mengurangi jumlah wilayah.
 - **Jangan menebak mengapa** kepekaan RS berbeda. Data tidak menjelaskannya.
 
-### Cerita 2: "{n} Wilayah Selalu Masuk, Sisanya Bergeser"
-- **Angka besar:** jumlah wilayah inti, yaitu yang masuk K besar di 2024, 2025, dan musim 2026. Default: 2 (Talang Betutu, Pangkalan Bun).
+### Cerita 2: "{n} dari {K} Wilayah Tetap Prioritas"
+
+**Pertanyaan:** apakah daftar tahun lalu bisa dipakai lagi tahun ini?
+
+- **Angka besar:** "{n}/{K}", jumlah wilayah yang masuk K besar di setiap periode (2024, 2025, musim 2026). Default: **2/5**.
 - **Bump chart:**
-  - Peringkat tiap wilayah di tiga periode, dengan pita "5 besar".
+  - Peringkat tiap wilayah di tiga periode menurut kasus tercegah, dengan pita "K besar".
   - Pewarnaan garis:
-    - wilayah inti: garis teal tebal;
-    - pendatang baru musim 2026 (Palangka Raya, Sampit): warna gambut;
+    - wilayah inti (masuk K besar di semua periode): teal tebal;
+    - wilayah yang naik masuk (tidak ada di daftar periode pertama, ada di periode terakhir): gambut;
     - lainnya: abu-abu.
-  - Bentuk ini menggantikan matriks v2. Pergeseran terlihat sebagai garis yang naik dan turun, bukan angka di sel.
-- **Dua cip uji ke depan:**
-  - pilih dengan data tahun lalu, nilai di tahun berikutnya, dibanding cara paling berasap;
-  - "Daftar 2024 dipakai 2025: +9%";
-  - "Daftar 2025 dipakai musim 2026: −4%".
-- **Satu kalimat:** "Daftar tahun lalu belum tentu cocok tahun ini: perbarui menjelang musim asap."
+  - Peringkat adalah **posisi relatif**. Naik ke peringkat 1 berarti bagian kasus tercegahnya paling besar di periode itu, bukan otomatis memburuk.
+- **Teks** (default ISPA balita):
+
+  > **2/5**: Talang Betutu dan Pangkalan Bun bertahan di 5 besar 3 periode berturut-turut.
+  >
+  > Bertahan karena di sanalah asap yang turun paling banyak mencegah ISPA balita.
+  >
+  > **Sintang, Palangka Raya dan Sampit** menyusul setelah 2024.
+  >
+  > **Daftar lama masih ampuh?**
+
+  - Nama penyakit dan nama wilayah berganti otomatis.
+  - Kalimat "bertahan karena…" menjawab salah baca "tetap di atas = belum beres".
+- **Dua cip uji ke depan** (warna netral):
+  - "Daftar 2024 diuji di 2025: +9%, dibanding memilih yang paling berasap";
+  - "Daftar 2025 diuji di musim 2026: −4%".
+  - Cara hitung: daftar dipilih dari data periode sebelumnya, lalu kasus tercegahnya dinilai di periode berikutnya dan dibandingkan dengan pembanding terbaik (paling kotor atau paling jauh melewati batas). "Setara" bila selisih < 2%.
 - **Jangan menulis "terbukti".** Uji ke depan hanya punya dua pasang tahun.
 
 ### Telusuri Lebih Dalam (tertutup)
@@ -162,7 +192,7 @@ Di v2, "Stabil" terbaca seperti "wilayah ini aman, tidak perlu didahulukan". Mak
 |---|---|---|
 | Replikasi simulator | Sama persis per RS dan total | Angka konsisten dengan seluruh halaman |
 | Undian koefisien, pilihan model tetap | 2025: unggul di 100% undian (+19,9%); 2024: 65% (seri); turun 30%: 100% (+10%) | Keunggulan 2025 bukan kebetulan koefisien |
-| Uji ke depan | 2024→2025 +9%; 2025→2026 −4% | Daftar harus diperbarui tiap musim |
+| Uji ke depan | 2024→2025 +9%; 2025→2026 −4% (K = 6: Setara / −9%) | Daftar harus diperbarui tiap musim |
 | Koefisien gabungan | 4 dari 5 pilihan sama | Wilayah inti tidak bergantung pada koefisien per RS |
 | Tanpa Talang Betutu dan Medan | Tetap +20,1% | Data interpolasi tidak menentukan hasil |
 | Pembanding studi nyata | Efek di data ini lebih besar | Angka dibaca relatif, ditulis di ⓘ |
@@ -203,6 +233,9 @@ Di v2, "Stabil" terbaca seperti "wilayah ini aman, tidak perlu didahulukan". Mak
 | Matriks tahun ke tahun | v2 | Tabel angka sulit dibaca sekilas | Bump chart |
 | Catatan dan Batasan (4 kotak) | v2 | Panjang, jarang dibaca, tampilan berat | Tombol ⓘ di kepala bagian |
 | Tabel tiga faktor di halaman utama | v2 | Terlalu padat untuk pembaca umum | Dipindah ke "Telusuri Lebih Dalam" |
+| Grafik sebar efisiensi + dua garis kemiringan | v3 | Sulit dibaca, label tertutup, pesan utama tidak terlihat | Batang terurut + urutan asap |
+| Judul "Selalu Masuk, Sisanya Bergeser" | v3 | Terbaca seperti masalah belum selesai | "{n} dari {K} Wilayah Tetap Prioritas" |
+| Cip merah/hijau | v3 | −4% merah mengundang "model kalah" | Cip netral dengan label pembanding |
 
 ---
 
@@ -226,7 +259,18 @@ Di v2, "Stabil" terbaca seperti "wilayah ini aman, tidak perlu didahulukan". Mak
 
 ---
 
-## 10. Hasil Uji Saat Dibangun (13 Nov 2026)
+## 10. Insight untuk Pemaparan
+
+1. **Fokus memberi hasil besar.** 5 dari 13 wilayah terdampak menyumbang 71% kasus ISPA balita yang bisa dicegah.
+2. **Asap tertinggi tidak sama dengan manfaat tertinggi.** Memilih dengan model dampak (pasien × kepekaan × kelebihan asap) memberi +20% kasus tercegah dengan beban polusi 8% lebih kecil dibanding memilih yang paling berasap. Talang Betutu paling berasap, tetapi hanya urutan 7 untuk manfaat per µg.
+3. **Kepekaan pasien berbeda jauh antar-RS.** Sintang +110% vs Sampit +33% per PM2.5 dua kali lipat; dengan usaha sama, Sintang mencegah 3,3× lebih banyak kasus.
+4. **Waktunya sempit dan bisa diduga:** Agustus–Oktober.
+5. **Daftar harus diperbarui tiap musim.** Hanya 2 wilayah yang bertahan; Palangka Raya dan Sampit naik tajam karena musim 2026 jauh lebih parah. Daftar 2025 yang dipakai di 2026 kalah 4% dari cara paling berasap.
+6. **Batasan:** angka adalah estimasi dari model asosiasi pada data sintetis (efek lebih besar dari studi nyata), bukan uji intervensi.
+
+---
+
+## 11. Hasil Uji Saat Dibangun (13 Nov 2026, diperbarui 14 Nov)
 
 1. **Angka default:**
    - 4.083 · +20% · Agu–Okt;
