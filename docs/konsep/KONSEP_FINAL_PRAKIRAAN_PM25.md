@@ -14,7 +14,7 @@ Halaman Prakiraan menjawab tiga pertanyaan, dari yang paling pasti ke yang palin
 |---|---|---|---|
 | **Kapan** bahaya datang di wilayah saya? | Kalender musim per stasiun | Tinggi | Bulan dalam tahun menjelaskan 99,7% variasi bulanan; 10 dari 13 stasiun jalur asap punya bulan > 55 yang sama pada 2024, 2025, 2026 |
 | **Seberapa parah** minggu ini? | Prakiraan 7 hari dan rentang 80% | Sedang | Lebih tepat dari menyalin di 25/25 stasiun di setiap horizon |
-| **Apa dampaknya** bagi rumah sakit? | Perkiraan kasus napas 7 hari dan jam rawan | Sedang | Uji balik 2026: galat turun 21% di hari pindah bulan, 42% saat PM2.5 melompat |
+| **Apa dampaknya** bagi rumah sakit? | Perkiraan kasus napas 7 hari | Sedang | Uji balik 2026: galat turun 21% di hari pindah bulan, 42% saat PM2.5 melompat |
 
 Kalimat pemaparan:
 
@@ -57,7 +57,7 @@ Fitur yang diuji lalu ditolak:
 - Diebold–Mariano: p < 0,05 di semua horizon tanpa koreksi; setelah koreksi Holm untuk 7 horizon hanya H+1 yang nyata (p = 0,020).
 - Validasi 2025: keunggulan +26% sampai +38%.
 - Kasus napas (uji balik 2026, galat absolut rata-rata): pindah bulan 6,11 → 4,80 (−21%), PM2.5 melompat 34,8 → 20,0 (−42%), hari biasa −5%, semua −8%.
-- Jam rawan: tepat ±1 jam pada median 88% hari antarstasiun (Palangka Raya hanya 14%; lencana keandalan ditampilkan per stasiun).
+- Jam rawan (dihitung, tidak ditampilkan): tepat ±1 jam pada median 88% hari antarstasiun, tetapi hanya 14% di Palangka Raya.
 
 ---
 
@@ -67,7 +67,7 @@ Fitur yang diuji lalu ditolak:
 
 | Tempat | Ukuran |
 |---|---|
-| KPI dan cerita | 25/25 stasiun; +17% besok, +25% di H+7; rentang 80% tepat 81%; bulan bahaya berulang 10/13 |
+| KPI dan cerita | 25/25 stasiun; galat 17% lebih kecil besok, 25% di H+7; 81% masuk rentang 80%; bulan asap sama 10/13 |
 | Tab Akurasi | Galat per horizon dan 7 pembanding, FAIRMODE, Diebold–Mariano dengan dan tanpa Holm, keandalan peluang, sensitivitas bobot, uji tanda, cakupan pindah bulan, uji balik kasus napas |
 | Tidak ditampilkan | R² dan "akurasi kategori": menyalin saja sudah memberi R² ≈ 1 pada data sehalus ini |
 
@@ -75,9 +75,9 @@ Fitur yang diuji lalu ditolak:
 
 | Pertanyaan | Jawaban |
 |---|---|
-| "Setelah Holm hanya H+1 yang nyata." | Holm untuk 7 uji terpisah sangat konservatif. Secara gabungan model menang di 25/25 stasiun di setiap horizon. Semua hasil, termasuk Holm, ada di tab Akurasi; kotak hari H+2 ke atas diberi label "keyakinan lebih rendah". |
+| "Setelah Holm hanya H+1 yang nyata." | Holm untuk 7 uji terpisah sangat konservatif. Secara gabungan model menang di 25/25 stasiun di setiap horizon. Semua hasil, termasuk Holm, ada di tab Akurasi; kotak hari H+2 ke atas diberi garis putus. |
 | "Data ini sintetis." | Benar, dan disebut terbuka. Yang bisa dipindahkan ke data nyata adalah metodenya: uji berjalan, pembanding naif, kalibrasi rentang. |
-| "Palangka 1 Sep diramal 219, aktual 421." | Lapis transisi menangkap arah lompatan (dari 95), tidak besarnya, karena musim 2026 jauh lebih parah dari 2025. Cerita "Waktu Tetap, Besarnya Naik" menjelaskan batas ini. |
+| "Palangka 1 Sep diramal 219, aktual 421." | Lapis transisi menangkap arah lompatan (dari 95), tidak besarnya, karena musim 2026 jauh lebih parah dari 2025. Mode "Uji di Tanggal Lain" menampilkan kasus ini apa adanya. |
 | "Kenapa hanya 7 hari?" | Lewat 7 hari keunggulan datang dari pola bulanan, yang sudah ditampilkan sebagai kalender. |
 | "Kenapa tidak pakai cuaca atau titik api?" | Sudah diuji: tidak ada variabel di dataset yang bergerak sebelum lompatan. |
 
@@ -86,28 +86,39 @@ Fitur yang diuji lalu ditolak:
 ## 5. Susunan Halaman (sesuai yang dibangun)
 
 ```
-Judul dinamis: "13 Stasiun Berpeluang Melewati 55 Minggu Ini"
-KPI: 13 dari 24 lokasi · 25/25 stasiun · 10/13 bulan bahaya berulang
-Kartu 1  Kalender Musim (visual utama)
-Kartu 2  Minggu Ini: Yang Berubah Kategori + strip 7 hari 8 stasiun
-Kartu 3  Detail Stasiun: 30 hari terakhir + 7 hari ke depan + kotak hari
-Kartu 4  Dampak dan Jam Rawan (dua kolom)
-Cerita 1 Waktu Tetap, Besarnya Naik
-Cerita 2 Diuji Seperti Prakiraan Sungguhan
-Telusuri Lebih Dalam: Semua Stasiun × 7 Hari · Akurasi · Kualitas Data · Cara Kerja
+Judul: "13 Lokasi Diperkirakan di Atas 55 Sampai 21 Okt"
+KPI: 13 dari 24 lokasi · 25/25 stasiun · 10/13 bulan asap sama 3 tahun
+1. Lokasi           pemilih lokasi (warna = kategori besok, urut dari terburuk) + grafik + kotak 7 hari
+2. Dampak RS        kasus napas 7 hari di rumah sakit pasangan lokasi terpilih
+3. Musim            jumlah hari di atas 55 per bulan 2026 + kolom bulan depan
+4. Bisa Dipercaya?  plot titik 25 stasiun + 3 angka
+Telusuri Lebih Dalam: Akurasi · Kualitas Data · Cara Kerja
 ```
 
-- **Kalender Musim.** Judulnya berupa jawaban: "Musim Asap Biasanya Berakhir 1 Nov di 11 Stasiun".
-  - Baris: stasiun yang pernah > 55, dikelompokkan per pulau. Stasiun yang selalu di bawah 55 dan yang datanya kurang disebut di catatan.
-  - Kolom: Jan–Des. Jan–Okt 2026 berisi data; bulan sesudahnya memakai pola 2025 (pudar). Bulan depan diberi bingkai.
-  - Kolom kanan: rasio bulan terburuk ÷ terbaik 2024 → 2026.
-  - Warna: kategori ISPU. Klik baris memilih stasiun.
-- **Minggu Ini.** Mode Terbit 14 Okt dan Putar Ulang 2026 (penggeser tanggal, contoh 31 Agu dan 25 Jul). Bila tidak ada perubahan kategori, kartu menyebut perubahan berikutnya (1 Nov) dari pola tahun lalu.
-- **Detail Stasiun.** Garis putus prakiraan, pita rentang 80%, penanda pergantian bulan. Kotak H+2 ke atas berlabel "keyakinan lebih rendah", dengan tooltip uji Holm.
-- **Dampak dan Jam Rawan.**
-  - Kasus napas 7 hari di RS pasangan stasiun, dihitung dengan rumus halaman Simulasi: kasus × (PM baru ÷ PM kini)^(b ÷ ln 2).
-  - Jam rawan besok: profil 24 jam dari 7 hari terakhir, dengan lencana keandalan.
-- **Cerita 2.** Plot titik 25 stasiun (keunggulan H+1); semua titik di kanan garis "setara menyalin".
+Alurnya satu arah: satu lokasi minggu depan → dampaknya ke rumah sakit → kapan musim asap selesai → bukti bahwa prakiraan bisa dipercaya. Lokasi terpilih dipakai bersama oleh kartu 1–3.
+
+- **Lokasi.** Peta panas semua lokasi × 7 hari dihapus; gantinya pemilih lokasi berbentuk pil kecil berwarna kategori ISPU besok, urut dari terburuk, jadi daftar lokasi berbahaya tetap terbaca sekilas tanpa tabel angka.
+  - Judul berupa jawaban ("Palangka Raya–Sampit: Berbahaya Besok").
+  - Sub-judul memakai keunggulan lokasi itu sepanjang 2026 (contoh Palangka Raya–Sampit: 11% lebih tepat dari menyalin), bukan 30 hari terakhir, karena 30 hari terlalu sedikit untuk dibandingkan.
+  - **Rekam jejak** (baru): garis teal di bagian riwayat = nilai yang diramal sehari sebelumnya. Galat terlihat langsung, termasuk lompatan yang terlambat ditangkap (1 Okt dan 14 Okt di Palangka Raya–Sampit). Praktik ini dipakai sistem verifikasi operasional (NOAA, Environment Canada VAQUM): prakiraan ditumpuk dengan pengamatan dalam satu deret waktu.
+  - Mode "Uji di Tanggal Lain" hanya mengubah kartu ini (contoh 31 Agu: diramal 219, terjadi 421).
+  - Kotak H+2 ke atas bergaris putus karena keunggulannya belum lolos uji Holm.
+- **Dampak RS.** Judul memuat selisih kasus 7 hari. Rumus sama dengan halaman Simulasi: kasus × (PM baru ÷ PM kini)^(b ÷ ln 2).
+- **Musim.** Ukurannya **jumlah hari PM2.5 di atas 55 per bulan**, bukan median.
+  - Median menyembunyikan bulan yang belum penuh atau naik di akhir bulan (Kototabang: median Okt 52, tetapi 6 dari 14 hari sudah di atas 55), dan besarnya sudah dijawab grafik prakiraan.
+  - Jumlah hari menjawab "kapan" dan langsung terkait kesehatan ("14 dari 14 hari tidak sehat").
+  - Warna satu hue oranye empat tingkat (0 hari, beberapa hari, sekitar separuh, hampir setiap hari). Angka hanya di kolom Okt dan Nov.
+  - Kolom Nov* = rata-rata November 2024 dan 2025: 0 hari di atas 55 di 11 lokasi yang kini sedang musim asap. Marunda di atas 55 sepanjang tahun.
+  - Lokasi yang tidak pernah di atas 55 diringkas menjadi satu baris "9 lokasi lain" (namanya di tooltip).
+- **Bisa Dipercaya?** Plot titik 25 stasiun (keunggulan H+1); semua titik di kanan garis "sama dengan menyalin".
+
+Dihapus karena tidak menambah jawaban atau sulit dibaca: peta panas semua lokasi × 7 hari, daftar "Yang Berubah Kategori", jam rawan (profil per jam hampir datar dan tepat hanya 14% hari di Palangka Raya), cerita "Waktu Tetap, Besarnya Naik", kolom rasio di kalender.
+
+### Sinyal kembar Palangka Raya–Sampit
+
+Data PM2.5 harian Palangka Raya (KTG-01) dan Sampit (KTG-02) di sumber berkorelasi 0,99995 (1.018 hari, selisih median 2,4%), padahal jaraknya sekitar 110 km dan alatnya berbeda (Thermo 5014i dan Met One BAM-1020). Stasiun lain yang paling mirip dengan Palangka Raya hanya berkorelasi 0,75 (Pangkalan Bun).
+
+Ini sifat data sumber, bukan hasil model, jadi tidak bisa diperbaiki dengan pemodelan ulang. Membuat deret Sampit "sendiri" dari stasiun tetangga berarti mengarang data. Keputusannya: keduanya ditampilkan sebagai satu lokasi "Palangka Raya–Sampit", dihitung sekali di KPI, dengan catatan korelasi di kartu lokasi dan lencana di tab Kualitas Data.
 
 ### Keputusan peta
 
@@ -121,7 +132,7 @@ Sebaran ruang tetap dijawab peta 3D di Ringkasan, yang tidak diubah.
 
 - Teal untuk prakiraan, warna ISPU untuk nilai, abu-abu untuk pembanding.
 - Angka besar hanya di KPI dan cerita.
-- Di layar 375 px kalender digeser horizontal dan dua kolom menjadi satu.
+- Di layar 375 px label bulan kalender memakai inisial dan pemilih lokasi digeser horizontal.
 
 ---
 
@@ -130,7 +141,7 @@ Sebaran ruang tetap dijawab peta 3D di Ringkasan, yang tidak diubah.
 | Berkas | Isi |
 |---|---|
 | `scripts/prakiraan/prakiraan.py` | Model, uji berjalan, kalibrasi rentang (termasuk pindah bulan), keluaran `prakiraan_pm25.json`, `prakiraan_verifikasi.json`, `prakiraan_arsip.json` |
-| `scripts/prakiraan/tambahan_v6.py` | Kalender, uji tanda, kasus napas per RS, jam rawan → `prakiraan_v6.json` |
+| `scripts/prakiraan/tambahan_v6.py` | Kalender (median dan hari di atas 55 per bulan), uji tanda, kasus napas per RS, jam rawan → `prakiraan_v6.json` |
 | `src/pages/Q7Prakiraan.tsx` | Halaman |
 | `src/v4-prakiraan.css` | Gaya halaman |
 
@@ -143,5 +154,4 @@ python scripts/prakiraan/tambahan_v6.py
 
 ### Belum dibangun
 
-- Tombol putar pada kalender.
 - Garis skenario eskalasi di grafik detail; tidak dijadikan angka karena gagal di validasi 2025.

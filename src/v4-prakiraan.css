@@ -111,3 +111,26 @@
 @media (max-width: 480px) {
   .pk-angka { grid-template-columns: 1fr; }
 }
+
+/* ---------- v7: alur ringkas ---------- */
+.pk-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+.pk-geser { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; font-size: 12px; color: var(--ink-soft); }
+.pk-geser b { color: var(--navy); }
+.pk-geser input[type=range] { width: 100%; accent-color: var(--teal-ink); }
+.pk-days li { border-top: 4px solid #e9eff1; background: #f6f9fa; }
+.pk-days li.lemah { border-left: 1px dashed #c9d6da; border-right: 1px dashed #c9d6da; border-bottom: 1px dashed #c9d6da; }
+.pk-days li em { color: var(--ink); }
+.card .note .pk-badges { margin-left: 4px; vertical-align: middle; }
+.pk-legenda i.pudar { background: #9db7e8; opacity: 1; outline: 1px dashed #5b7fc4; outline-offset: -1px; }
+
+/* ---------- v8: pemilih lokasi ---------- */
+.pk-pilih { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 12px; }
+.pk-pilih button { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: 600 12px var(--font-body, inherit); color: var(--ink-soft); cursor: pointer; }
+.pk-pilih button i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.pk-pilih button.on { border-color: var(--navy); color: var(--navy); box-shadow: 0 0 0 1px var(--navy) inset; }
+.pk-pilih button:hover { border-color: var(--ink-soft); }
+.pk-pilih button:focus-visible { outline: 2px solid var(--teal-ink); outline-offset: 2px; }
+@media (max-width: 600px) {
+  .pk-pilih { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .pk-pilih button { flex: none; }
+}

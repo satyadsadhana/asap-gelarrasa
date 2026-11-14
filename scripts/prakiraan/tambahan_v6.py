@@ -37,13 +37,16 @@ def r1(v, d=1):
 def kalender(a: pd.DataFrame, master: pd.DataFrame) -> list[dict]:
     a = a.assign(y=a["tanggal"].dt.year, m=a["tanggal"].dt.month)
     L = a.groupby(["kode_stasiun", "y", "m"])["pm25"].median()
+    a = a[a["pm25"].notna()]
+    H = a.assign(atas=a["pm25"] > BATAS).groupby(["kode_stasiun", "y", "m"])["atas"].agg(["sum", "count"])
     out = []
     for c, row in master.set_index("kode_stasiun").iterrows():
         rec = {"code": c, "wilayah": row["region_group"], "pulau": PULAU.get(row["region_group"], "Lainnya"), "tahun": {}}
         for y in (2024, 2025, 2026):
             v = [r1(L.get((c, y, m))) for m in range(1, 13)]
             ok = [x for x in v if x is not None]
-            rec["tahun"][str(y)] = {"bulan": v, "lewat55": [m + 1 for m, x in enumerate(v) if x is not None and x > BATAS],
+            hari = [[int(H.loc[(c, y, m), "sum"]), int(H.loc[(c, y, m), "count"])] if (c, y, m) in H.index else None for m in range(1, 13)]
+            rec["tahun"][str(y)] = {"bulan": v, "hari55": hari, "lewat55": [m + 1 for m, x in enumerate(v) if x is not None and x > BATAS],
                                     "rasio": r1(max(ok) / min(ok)) if len(ok) >= 6 and min(ok) > 0 else None}
         b = [set(rec["tahun"][str(y)]["lewat55"]) for y in (2024, 2025)]
         rec["konsisten"] = b[0] == b[1]
