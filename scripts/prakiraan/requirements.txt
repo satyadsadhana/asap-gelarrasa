@@ -1,0 +1,7 @@
+# Versi yang dipakai saat menghasilkan public/data/prakiraan_*.json (14 Nov 2026)
+pandas==2.3.2
+numpy==1.26.4
+scipy==1.15.3
+scikit-learn==1.7.1
+lightgbm==4.6.0
+optuna==4.5.0
