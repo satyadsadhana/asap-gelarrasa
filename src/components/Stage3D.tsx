@@ -62,6 +62,8 @@ type Props = {
   /** Atur label stasiun yang berdekatan: a "end" = teks di kiri tiang, "start" = di kanan; dy = geser ke bawah (px). */
   arah?: Record<string, { a?: "start" | "end"; dy?: number }>;
   autoRotate?: boolean;
+  /** Durasi transisi tiang (ms, linear) saat nilai berganti cepat, mis. Putar Waktu. Default: 1500 ms ease. */
+  step?: number;
   fallback?: React.ReactNode;
   caption?: React.ReactNode;
 };
@@ -71,7 +73,7 @@ const ELEV = 4200; // meter per µg/m³
 // sehingga transisi tinggi tiang dimulai ulang dari nol terus dan tiang tidak pernah naik.
 const ALL = () => true;
 
-export default function Stage3D({ values, view = "nasional", visible = ALL, height = 460, cap = null, labels, arah, autoRotate = false, fallback, caption }: Props) {
+export default function Stage3D({ values, view = "nasional", visible = ALL, height = 460, cap = null, labels, arah, autoRotate = false, fallback, caption, step }: Props) {
   const { stations, pilihan, openProfil } = useApp();
   const [geo, setGeo] = useState<unknown>(null);
   const [ok] = useState(webglOk);
@@ -135,7 +137,9 @@ export default function Stage3D({ values, view = "nasional", visible = ALL, heig
   if (!ok) return <>{fallback ?? null}</>;
 
   const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-  const rise = { duration: reduced() ? 0 : 1500, easing: ease };
+  // Putar Waktu: nilai berganti tiap ~140 ms. Transisi 1500 ms ease-in-out yang dimulai ulang tiap langkah
+  // membuat tiang tertinggal jauh dari angka label, jadi saat itu pakai transisi linear sepanjang satu langkah.
+  const rise = { duration: reduced() ? 0 : step ?? 1500, easing: step ? (t: number) => t : ease };
   const capped = (v: number | null) => (v == null ? 0 : cap != null ? Math.min(v, cap) : v);
   const colFor = (d: D): [number, number, number, number] => {
     if (!d.shown || d.v == null) return [...NA, 240]; // poin 12: tiang tidak andal harus tetap terlihat
@@ -192,6 +196,7 @@ export default function Stage3D({ values, view = "nasional", visible = ALL, heig
       fontSettings: { sdf: true, fontSize: 64, buffer: 6, radius: 12 },
       billboard: true, getTextAnchor: (d) => arah?.[d.s.code]?.a ?? "middle", getAlignmentBaseline: "bottom",
       getPixelOffset: (d) => [0, arah?.[d.s.code]?.dy ?? 0],
+      transitions: { getPosition: rise }, // label naik-turun bersama puncak tiang
       updateTriggers: { getPosition: [grow, values, cap], getTextAnchor: [JSON.stringify(arah ?? {})], getPixelOffset: [JSON.stringify(arah ?? {})] },
       // label selalu digambar di atas tiang lain supaya tidak terpotong
       parameters: { depthCompare: "always", depthWriteEnabled: false },

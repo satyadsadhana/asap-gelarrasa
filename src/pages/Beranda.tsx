@@ -101,7 +101,7 @@ export default function Beranda() {
   return (
     <main>
       <section className="hero3d" data-tour="map-card">
-        <Stage3D values={values} visible={filt} height="100%" autoRotate
+        <Stage3D values={values} visible={filt} height="100%" autoRotate step={pos != null ? 140 : undefined}
           fallback={<StationMap values={values} visible={filt} label={`PM2.5 ${label}`} height={520} />} />
         <div className="hero3d-text">
           <h1>Udara yang Kita Hirup</h1>
