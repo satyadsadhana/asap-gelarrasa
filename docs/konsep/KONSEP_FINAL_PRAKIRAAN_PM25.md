@@ -90,7 +90,7 @@ Judul: "13 Lokasi Diperkirakan di Atas 55 Sampai 21 Okt"
 KPI: 13 dari 24 lokasi · 25/25 stasiun · 10/13 bulan asap sama 3 tahun
 1. Lokasi           pemilih lokasi (warna = kategori besok, urut dari terburuk) + grafik + kotak 7 hari
 2. Dampak RS        kasus napas 7 hari di rumah sakit pasangan lokasi terpilih
-3. Musim            jumlah hari di atas 55 per bulan 2026 + kolom bulan depan
+3. Musim            linimasa periode di atas 55 per lokasi 2024–2026 + sisa musim
 4. Bisa Dipercaya?  plot titik 25 stasiun + 3 angka
 Telusuri Lebih Dalam: Akurasi · Kualitas Data · Cara Kerja
 ```
@@ -104,15 +104,18 @@ Alurnya satu arah: satu lokasi minggu depan → dampaknya ke rumah sakit → kap
   - Mode "Uji di Tanggal Lain" hanya mengubah kartu ini (contoh 31 Agu: diramal 219, terjadi 421).
   - Kotak H+2 ke atas bergaris putus karena keunggulannya belum lolos uji Holm.
 - **Dampak RS.** Judul memuat selisih kasus 7 hari. Rumus sama dengan halaman Simulasi: kasus × (PM baru ÷ PM kini)^(b ÷ ln 2).
-- **Musim.** Ukurannya **jumlah hari PM2.5 di atas 55 per bulan**, bukan median.
-  - Median menyembunyikan bulan yang belum penuh atau naik di akhir bulan (Kototabang: median Okt 52, tetapi 6 dari 14 hari sudah di atas 55), dan besarnya sudah dijawab grafik prakiraan.
-  - Jumlah hari menjawab "kapan" dan langsung terkait kesehatan ("14 dari 14 hari tidak sehat").
-  - Warna satu hue oranye empat tingkat (0 hari, beberapa hari, sekitar separuh, hampir setiap hari). Angka hanya di kolom Okt dan Nov.
-  - Kolom Nov* = rata-rata November 2024 dan 2025: 0 hari di atas 55 di 11 lokasi yang kini sedang musim asap. Marunda di atas 55 sepanjang tahun.
-  - Lokasi yang tidak pernah di atas 55 diringkas menjadi satu baris "9 lokasi lain" (namanya di tooltip).
+- **Musim: linimasa musim asap.** Kalender bulanan diganti karena datanya berbentuk tangga (hari di atas 55 hampir selalu 0 atau penuh sebulan), jadi kalender hanya menghasilkan blok seragam dan kolom Jan–Jun kosong.
+  - Tiap lokasi punya tiga batang (2024, 2025, 2026 paling tebal). Batang = periode PM2.5 di atas 55 (hari di atas 55 berurutan, celah ≤ 10 hari digabung). Warna = kategori ISPU rata-rata selama musim. Kotak putus = sisa musim 2026 sampai tanggal akhir musim tahun lalu. Garis vertikal = hari terbit.
+  - Angka di kanan = rata-rata musim 2024, 2025, 2026.
+  - Judul: "Musim Asap Diperkirakan Berakhir 31 Okt, 17 Hari Lagi" (akhir musim 2025 yang paling umum, dihitung dari hari terbit).
+  - Tiga temuan yang langsung terbaca dan ditulis di catatan:
+    1. **Waktu berakhir tetap:** akhir musim sama pada 2024 dan 2025 (31 Okt) di 10 dari 12 lokasi yang sedang musim asap.
+    2. **Besarnya naik:** musim 2026 lebih parah dari 2025 di 8 lokasi; terbesar Palangka Raya–Sampit (rata-rata 58 → 90 → 289, mulai 1 Sep pada 2024 dan 1 Jul pada 2025–2026).
+    3. **Kejadian baru:** Kototabang pertama kali di atas 55 sejak 9 Okt 2026.
+  - Ini menyambung ke model: lapis transisi bulan memakai pola yang sama (level bulan tahun lalu), jadi linimasa sekaligus menjelaskan kenapa prakiraan memperkirakan penurunan di awal November, dan kenapa besarnya tetap tidak pasti.
 - **Bisa Dipercaya?** Plot titik 25 stasiun (keunggulan H+1); semua titik di kanan garis "sama dengan menyalin".
 
-Dihapus karena tidak menambah jawaban atau sulit dibaca: peta panas semua lokasi × 7 hari, daftar "Yang Berubah Kategori", jam rawan (profil per jam hampir datar dan tepat hanya 14% hari di Palangka Raya), cerita "Waktu Tetap, Besarnya Naik", kolom rasio di kalender.
+Dihapus karena tidak menambah jawaban atau sulit dibaca: kalender bulanan (median, lalu jumlah hari), peta panas semua lokasi × 7 hari, daftar "Yang Berubah Kategori", jam rawan (profil per jam hampir datar dan tepat hanya 14% hari di Palangka Raya), cerita "Waktu Tetap, Besarnya Naik", kolom rasio di kalender.
 
 ### Sinyal kembar Palangka Raya–Sampit
 
@@ -132,7 +135,7 @@ Sebaran ruang tetap dijawab peta 3D di Ringkasan, yang tidak diubah.
 
 - Teal untuk prakiraan, warna ISPU untuk nilai, abu-abu untuk pembanding.
 - Angka besar hanya di KPI dan cerita.
-- Di layar 375 px label bulan kalender memakai inisial dan pemilih lokasi digeser horizontal.
+- Di layar 375 px angka kanan linimasa disembunyikan (ada di tooltip) dan pemilih lokasi digeser horizontal.
 
 ---
 
@@ -141,7 +144,7 @@ Sebaran ruang tetap dijawab peta 3D di Ringkasan, yang tidak diubah.
 | Berkas | Isi |
 |---|---|
 | `scripts/prakiraan/prakiraan.py` | Model, uji berjalan, kalibrasi rentang (termasuk pindah bulan), keluaran `prakiraan_pm25.json`, `prakiraan_verifikasi.json`, `prakiraan_arsip.json` |
-| `scripts/prakiraan/tambahan_v6.py` | Kalender (median dan hari di atas 55 per bulan), uji tanda, kasus napas per RS, jam rawan → `prakiraan_v6.json` |
+| `scripts/prakiraan/tambahan_v6.py` | Kalender bulanan, periode musim asap per tahun (`musim`), uji tanda, kasus napas per RS, jam rawan → `prakiraan_v6.json` |
 | `src/pages/Q7Prakiraan.tsx` | Halaman |
 | `src/v4-prakiraan.css` | Gaya halaman |
 

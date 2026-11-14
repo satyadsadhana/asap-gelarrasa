@@ -44,8 +44,9 @@ type Arsip = { mulai: string; rentang: Record<string, Record<string, [number, nu
 type KalSt = { code: string; wilayah: string; pulau: string; konsisten: boolean;
   tahun: Record<string, { bulan: (number | null)[]; hari55: ([number, number] | null)[]; lewat55: number[]; rasio: number | null }> };
 type Uji4 = { n: number; mae_rata7: number; mae_prak: number; turun: number };
+type MusimSt = { code: string; tahun: Record<string, { mulai: string | null; akhir?: string; rata?: number; hari?: number; berlanjut?: boolean } | null> };
 type V6 = {
-  terbit: string; kalender: KalSt[]; uji_tanda: { h: number; menang: number; n: number; p: number }[];
+  terbit: string; kalender: KalSt[]; musim: MusimSt[]; uji_tanda: { h: number; menang: number; n: number; p: number }[];
   kasus: { rs: { rs: string; nama: string; code: string; rata7: number; riwayat: (number | null)[]; hari: { tgl: string; kasus: number; lo: number; hi: number }[] }[];
     uji: { semua: Uji4; biasa: Uji4; lintas: Uji4; lompat: Uji4 } };
   jam: { code: string; profil: number[]; buruk: number; bersih: number; andal: number; n: number }[];
@@ -138,20 +139,20 @@ export default function Q7Prakiraan() {
     return { f };
   })();
 
-  // kalender: hari di atas 55 per bulan, 2026 + bulan depan dari tahun-tahun sebelumnya
-  const bIni = +pk.terbit.slice(5, 7), bDepan = (bIni % 12) + 1;
-  const adaHari = (k: KalSt) => (k.tahun["2026"]?.hari55.filter(Boolean).length ?? 0) >= 6;
-  const pernah = (k: KalSt) => ["2024", "2025", "2026"].some((y) => k.tahun[y]?.hari55.some((h) => h && h[0] > 0));
-  const kalSemua = v6.kalender.filter((k) => k.code !== "KTG-02" && adaHari(k));
-  const kalMusim = kalSemua.filter(pernah), kalAman = kalSemua.filter((k) => !pernah(k));
-  const fr = (h: [number, number] | null | undefined) => (h && h[1] > 0 ? h[0] / h[1] : null);
-  const depan = (k: KalSt) => {
-    const hs = ["2024", "2025"].map((y) => k.tahun[y]?.hari55[bDepan - 1]).filter(Boolean) as [number, number][];
-    const c = hs.reduce((a, h) => a + h[1], 0);
-    return c ? hs.reduce((a, h) => a + h[0], 0) / c : null;
-  };
-  const reda = kalMusim.filter((k) => (fr(k.tahun["2026"]?.hari55[bIni - 1]) ?? 0) >= 0.5 && depan(k) === 0);
-  const bertahan = kalMusim.filter((k) => (depan(k) ?? 0) > 0);
+  // musim asap: periode PM2.5 > 55 per lokasi per tahun
+  const akhirLalu = (m: MusimSt) => m.tahun["2025"]?.akhir ?? m.tahun["2024"]?.akhir ?? null;
+  const musimSt = v6.musim.filter((m) => m.code !== "KTG-02" && TAHUN3.some((y) => (m.tahun[y]?.rata ?? 0) > pk.batas))
+    .sort((a, b) => Number(!!a.tahun["2026"]?.mulai?.endsWith("01-01")) - Number(!!b.tahun["2026"]?.mulai?.endsWith("01-01"))
+      || (b.tahun["2026"]?.rata ?? 0) - (a.tahun["2026"]?.rata ?? 0));
+  const musimIni = musimSt.filter((m) => m.tahun["2026"]?.berlanjut && !m.tahun["2026"]?.mulai?.endsWith("01-01"));
+  const akhirList = musimIni.map(akhirLalu).filter(Boolean) as string[];
+  const akhirUmum = akhirList.length ? akhirList.sort((a, b) => akhirList.filter((x) => x === b).length - akhirList.filter((x) => x === a).length)[0] : null;
+  const akhirSama = akhirUmum ? musimIni.filter((m) => ["2024", "2025"].every((y) => !m.tahun[y]?.akhir || m.tahun[y]!.akhir!.slice(5) === akhirUmum.slice(5))).length : 0;
+  const sisa = akhirUmum ? selisih(pk.terbit, geser(akhirUmum)) : null;
+  const naik = musimSt.filter((m) => { const r = TAHUN3.map((y) => m.tahun[y]?.rata ?? 0); return r[0] > 0 && r[1] > r[0] && r[2] > r[1]; });
+  const terNaik = [...naik].sort((a, b) => (b.tahun["2026"]!.rata! - b.tahun["2025"]!.rata!) - (a.tahun["2026"]!.rata! - a.tahun["2025"]!.rata!))[0];
+  const baru = musimSt.filter((m) => m.tahun["2026"]?.mulai && !m.tahun["2024"]?.mulai && !m.tahun["2025"]?.mulai);
+  const labelKode = (c: string) => (c === "KTG-01" ? KEMBAR_NAMA : nama(c));
   const lewatAll = v6.kalender.filter((k) => k.code !== "KTG-02" && ["2024", "2025", "2026"].some((y) => k.tahun[y]?.lewat55.length));
   const sama = lewatAll.filter((k) => {
     const s = ["2024", "2025", "2026"].map((y) => (k.tahun[y]?.lewat55 ?? []).filter((m) => m <= 10).join(","));
@@ -162,7 +163,6 @@ export default function Q7Prakiraan() {
   const rs = v6.kasus.rs.find((x) => x.code === kode);
   const rsTot = rs ? rs.hari.reduce((a, h) => a + h.kasus, 0) : 0, rsBeda = rs ? rsTot - rs.rata7 * 7 : 0;
   const ks = v6.kasus.uji;
-  const B_PANJANG = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
   const besok = sel.hari[0];
   const skillSel = vf.kualitas.find((q) => q.code === sel.code)?.skill_h1 ?? null;
 
@@ -218,13 +218,15 @@ export default function Q7Prakiraan() {
           {rs ? <KasusRS r={rs} terbit={v6.terbit} /> : <p className="note">Pilih lokasi lain untuk melihat dampak ke rumah sakit.</p>}
         </Card>
 
-        <Card title={reda.length > 0 ? `Musim Asap Biasanya Selesai Akhir ${B_PANJANG[bIni - 1]}` : "Hari Tidak Sehat per Bulan"}
-          sub={<>Jumlah hari PM2.5 di atas 55 tiap bulan 2026 (data sampai {pendek(pk.terbit)}). Kolom {BULAN[bDepan - 1]}* = rata-rata {B_PANJANG[bDepan - 1]} 2024 dan 2025.</>}
-          note={<>{reda.length > 0 && <>{B_PANJANG[bDepan - 1]} 2024 dan 2025: 0 hari di atas 55 di {reda.length} lokasi yang kini sedang musim asap. </>}
-            {bertahan.length > 0 && <>{bertahan.map((k) => nama(k.code)).join(", ")} di atas 55 sepanjang tahun.</>}</>}>
-          <Kalender st={kalMusim} aman={kalAman} nama={nama} bIni={bIni} bDepan={bDepan} depan={depan} kode={kode} onPilih={setPilih} />
-          <div className="pk-legenda" aria-label="Jumlah hari di atas 55">
-            {HARI_LAB.map((l, i) => <span key={l}><i style={{ background: HARI_COL[i] }} />{l}</span>)}
+        <Card title={akhirUmum && sisa != null && sisa > 0 ? `Musim Asap Diperkirakan Berakhir ${pendek(geser(akhirUmum))}, ${sisa} Hari Lagi` : "Musim Asap per Lokasi"}
+          sub="Tiap lokasi tiga batang: 2024, 2025, 2026 (tebal). Batang = periode PM2.5 di atas 55; warna = rata-rata selama musim; kotak putus = sisa musim menurut tahun lalu. Angka kanan = rata-rata 2024, 2025, 2026."
+          note={<>{akhirUmum && <>Akhir musim sama pada 2024 dan 2025 di {akhirSama} dari {musimIni.length} lokasi yang sedang musim asap. </>}
+            {naik.length > 0 && terNaik && <>Musim 2026 lebih parah dari 2025 di {naik.length} lokasi; terbesar {labelKode(terNaik.code)} ({fmt(terNaik.tahun["2025"]!.rata!, 0)} → {fmt(terNaik.tahun["2026"]!.rata!, 0)}). </>}
+            {baru.map((m) => <span key={m.code}>{labelKode(m.code)} pertama kali di atas 55 sejak {pendek(m.tahun["2026"]!.mulai!)}. </span>)}</>}>
+          <Linimasa st={musimSt} label={labelKode} terbit={pk.terbit} akhirLalu={akhirLalu} kode={kode} onPilih={setPilih} />
+          <div className="pk-legenda" aria-label="Kategori rata-rata musim">
+            {[2, 3, 4].map((i) => <span key={i}><i style={{ background: ISPU_COL[i] }} />{ISPU_LAB[i]}</span>)}
+            <span><i className="putus" />sisa musim (perkiraan)</span>
           </div>
         </Card>
       </>}
@@ -408,7 +410,7 @@ function CaraKerja({ vf, sb }: { vf: Verif; sb: Verif["struktur_bulanan"] }) {
       <div><b>Penyetelan</b><span>{vf.setelan.percobaan} percobaan Optuna di 2025. Terpilih: {String(b.objective)}, {b.n_estimators} pohon, {b.num_leaves} daun.</span></div>
       <div><b>Rentang dan Peluang</b><span>Rentang 80% dari sebaran galat 2025 per stasiun, musim, dan horizon. Peluang &gt; 55 = gabungan model dan pola musiman per stasiun-bulan, bobotnya dipilih di 2025.</span></div>
       <div><b>Lapis Transisi Bulan</b><span>Saat tanggal target pindah bulan, prakiraan = nilai hari ini + selisih log level bulan target dan bulan asal tahun lalu di stasiun itu. Di uji 2026 galat log turun sekitar 65% pada lintas bulan (validasi 2025: sekitar 58–61%). Metode ini memanfaatkan pola tangga bulanan di dataset ini; pada sensor yang tidak berpola begitu, lapis ini tidak banyak membantu.</span></div>
-      <div><b>Kalender Musim</b><span>Jumlah hari PM2.5 di atas 55 per bulan per lokasi. Bulan dalam tahun menjelaskan sekitar 99,7% variasi level bulanan 2024–2025, jadi bulan depan memakai rata-rata bulan yang sama tahun 2024 dan 2025.</span></div><div><b>Rekam Jejak</b><span>Garis teal di grafik lokasi = prakiraan besok yang dibuat sehari sebelumnya, diambil dari arsip uji berjalan 2026.</span></div>
+      <div><b>Linimasa Musim</b><span>Periode PM2.5 di atas 55 per lokasi per tahun (hari berurutan, celah sampai 10 hari digabung). Sisa musim 2026 = sampai tanggal akhir musim 2025 di lokasi itu; akhir musim sama pada 2024 dan 2025 di hampir semua lokasi.</span></div><div><b>Rekam Jejak</b><span>Garis teal di grafik lokasi = prakiraan besok yang dibuat sehari sebelumnya, diambil dari arsip uji berjalan 2026.</span></div>
       <div><b>Kasus Napas</b><span>Rata-rata kasus 7 hari terakhir × (PM2.5 prakiraan ÷ PM2.5 7 hari terakhir)^(b ÷ ln 2), b per RS dari model dampak halaman Simulasi. Diuji balik pada arsip prakiraan 2026.</span></div>
       <div><b>Struktur Dataset</b><span>Tingkat PM2.5 di dataset berganti pada tanggal 1 tiap bulan: {sb.awal_lonjakan_tgl1} dari {sb.awal_lonjakan} awal lonjakan dan {sb.lonjakan_besar_tgl1} dari {sb.lonjakan_besar} lonjakan besar jatuh pada tanggal 1. Sebelumnya struktur ini sengaja tidak dimanfaatkan; sekarang dipakai secara terbuka di lapis transisi, dan bergantung pada dataset ini.</span></div>
       <div><b>Batasan</b><span>Tanpa titik api dan curah hujan, model tidak bisa melihat kebakaran baru sebelum asapnya terukur. Angka harian di atas 7 hari tidak ditampilkan.</span></div>
@@ -416,53 +418,61 @@ function CaraKerja({ vf, sb }: { vf: Verif; sb: Verif["struktur_bulanan"] }) {
   );
 }
 
-/* ---------- kalender hari di atas 55: lokasi × bulan ---------- */
-const HARI_LAB = ["0 hari", "Beberapa hari", "Sekitar separuh", "Hampir setiap hari"];
-const HARI_COL = ["#eef2f3", RAMP[1], RAMP[3], RAMP[5]];
-const kelasHari = (f: number) => (f <= 0 ? 0 : f < 1 / 3 ? 1 : f < 2 / 3 ? 2 : 3);
+/* ---------- linimasa musim asap: periode PM2.5 > 55 per lokasi, 2024 / 2025 / 2026 ---------- */
+const TAHUN3 = ["2024", "2025", "2026"] as const;
+const geser = (iso: string) => `2026${iso.slice(4)}`;
+const ts = (iso: string) => Date.parse(iso + "T00:00:00Z");
 
-function Kalender({ st, aman, nama, bIni, bDepan, depan, kode, onPilih }: { st: KalSt[]; aman: KalSt[]; nama: (c: string) => string; bIni: number; bDepan: number;
-  depan: (k: KalSt) => number | null; kode: string; onPilih: (c: string) => void }) {
+function Linimasa({ st, label, terbit, akhirLalu, kode, onPilih }: { st: MusimSt[]; label: (c: string) => string; terbit: string;
+  akhirLalu: (m: MusimSt) => string | null; kode: string; onPilih: (c: string) => void }) {
   const sempit = typeof window !== "undefined" && window.innerWidth < 600;
-  const lebar = typeof window !== "undefined" && window.innerWidth >= 1000;
-  const hariBln = new Date(Date.UTC(2025, bDepan, 0)).getUTCDate();
-  const bulan = useMemo(() => [...Array.from({ length: bIni }, (_, i) => i + 1), bDepan], [bIni, bDepan]);
-  const baris = useMemo(() => {
-    const tot = (k: KalSt) => (k.tahun["2026"]?.hari55 ?? []).reduce((a, h) => a + (h ? h[0] : 0), 0);
-    const sepanjang = (k: KalSt) => ((depan(k) ?? 0) > 0 ? 1 : 0);
-    return [...st].sort((a, b) => sepanjang(a) - sepanjang(b) || tot(b) - tot(a));
-  }, [st, depan]);
-  const nm = (k: KalSt) => (k.code === "KTG-01" ? KEMBAR_NAMA : nama(k.code));
-  const labelY = [...baris.map(nm), ...(aman.length ? [`${aman.length} lokasi lain`] : [])];
+  const x0 = ts("2026-06-01"), x1 = ts("2026-12-01");
   const opt = useMemo<EChartsOption>(() => {
     const data: any[] = [];
-    const sel = (k: number, xi: number, yi: number, f: number, teks: string, pola: boolean, lab: string) => data.push({
-      value: [xi, yi, k, f, pola ? 1 : 0], teks, lab,
-      itemStyle: { color: HARI_COL[k], borderColor: "#fff", borderWidth: pola ? 3 : 1.5 },
-      label: { show: !sempit && (pola || xi === bulan.length - 2), color: k >= 2 ? "#fff" : C.ink } });
-    baris.forEach((k, yi) => bulan.forEach((m, xi) => {
-      const pola = xi === bulan.length - 1;
-      if (pola) { const f = depan(k); if (f != null) sel(kelasHari(f), xi, yi, f, `${fmt(f * 100, 0)}% hari di atas 55 (rata-rata ${BULAN[m - 1]} 2024 dan 2025)`, true, `${Math.round(f * hariBln)}/${hariBln}`); return; }
-      const h = k.tahun["2026"]?.hari55[m - 1];
-      if (!h || !h[1]) return;
-      sel(kelasHari(h[0] / h[1]), xi, yi, h[0], `${h[0]} dari ${h[1]} hari di atas 55`, false, `${h[0]}/${h[1]}`);
+    st.forEach((m, yi) => TAHUN3.forEach((y, li) => {
+      const t = m.tahun[y];
+      if (!t?.mulai || !t.akhir || t.rata == null) return;
+      const a = Math.max(ts(geser(t.mulai)), x0), b = Math.min(ts(geser(t.akhir)) + 864e5, x1);
+      data.push({ value: [a, b, yi, li, ispuIdx(t.rata), 0], info: { y, t, sepanjang: t.mulai.endsWith("01-01") && (t.akhir.endsWith("12-31") || t.berlanjut) } });
+      if (y === "2026" && t.berlanjut) {
+        const e = akhirLalu(m);
+        if (e && ts(geser(e)) > ts(t.akhir)) data.push({ value: [ts(t.akhir) + 864e5, Math.min(ts(geser(e)) + 864e5, x1), yi, li, ispuIdx(t.rata), 1], info: { y, t, sampai: e } });
+      }
     }));
-    if (aman.length) bulan.forEach((_, xi) => sel(0, xi, baris.length, 0, `0 hari di atas 55 sepanjang 2024–2026: ${aman.map((k) => nama(k.code)).join(", ")}`, xi === bulan.length - 1, "0"));
     return {
-      tooltip: { formatter: (q: any) => { const [xi, yi, , , pola] = q.value; return `<b>${labelY[yi]}</b> · ${BULAN[bulan[xi] - 1]} ${pola ? "(perkiraan)" : "2026"}<br/>${q.data.teks}`; } },
-      visualMap: { show: false, type: "piecewise", dimension: 2, pieces: HARI_COL.map((c, i) => ({ value: i, color: c })) } as any,
-      grid: { left: 8, right: 8, top: 30, bottom: 4, containLabel: true },
-      xAxis: { type: "category", position: "top", data: bulan.map((m, i) => (sempit ? BULAN[m - 1][0] : i === bulan.length - 1 ? (lebar ? `${BULAN[m - 1]}\nperkiraan` : `${BULAN[m - 1]}*`) : BULAN[m - 1])),
-        axisTick: { show: false }, axisLine: { show: false }, axisLabel: { interval: 0, fontSize: sempit ? 9.5 : 11, fontWeight: 600, color: C.ink, lineHeight: 13 } },
-      yAxis: { type: "category", inverse: true, data: labelY, axisTick: { show: false }, axisLine: { show: false },
-        axisLabel: { fontSize: sempit ? 10 : 11.5, color: C.ink, formatter: (v: string, i: number) => (baris[i]?.code === kode ? `{b|${v}}` : i === baris.length ? `{m|${v}}` : v),
-          rich: { b: { fontWeight: 800, color: TEAL_INK, fontSize: 11.5 }, m: { color: C.ink, opacity: 0.7, fontStyle: "italic", fontSize: 11.5 } } } },
-      series: [{ type: "heatmap", data, label: { fontSize: 10.5, fontWeight: 650, formatter: (q: any) => q.data.lab },
-        emphasis: { itemStyle: { borderColor: C.ink, borderWidth: 1.5 } } } as any],
+      tooltip: { formatter: (q: any) => {
+        const { y, t, sampai } = q.data.info, m = st[q.value[2]];
+        if (sampai) return `<b>${label(m.code)}</b><br/>Sisa musim 2026 menurut tahun lalu: sampai ${pendek(geser(sampai))}`;
+        return `<b>${label(m.code)} ${y}</b><br/>${pendek(t.mulai)} – ${pendek(t.akhir)}${t.berlanjut ? " (masih berlangsung)" : ""}<br/>${t.hari} hari di atas 55 · rata-rata ${fmt(t.rata, 0)} ${UG}<br/>${ISPU_LAB[ispuIdx(t.rata)]}`;
+      } },
+      grid: { left: 8, right: sempit ? 8 : 112, top: 30, bottom: 24, containLabel: true },
+      graphic: sempit ? [] : ([["2026", 8], ["2025", 46], ["2024", 80]] as const).map(([t, r]) => ({ type: "text", right: r, top: 8, style: { text: t, fontSize: 10.5, fontWeight: 650, fill: t === "2026" ? C.ink : "#8a979c" } })),
+      xAxis: { type: "time", min: x0, max: x1, position: "top", splitNumber: 6, axisLine: { show: false }, axisTick: { show: false },
+        splitLine: { show: true, lineStyle: { color: "#eef2f3" } },
+        axisLabel: { fontSize: 11, fontWeight: 600, color: C.ink, formatter: (v: number) => BULAN[new Date(v + 12 * 36e5).getMonth()] } },
+      yAxis: [
+        { type: "category", inverse: true, data: st.map((m) => label(m.code)), axisTick: { show: false }, axisLine: { show: false },
+          axisLabel: { fontSize: sempit ? 10.5 : 12, color: C.ink, formatter: (v: string, i: number) => (st[i]?.code === kode ? `{b|${v}}` : v), rich: { b: { fontWeight: 800, color: TEAL_INK, fontSize: 12 } } } },
+        { type: "category", inverse: true, position: "right", data: st.map((m) => TAHUN3.map((y) => (m.tahun[y]?.rata != null ? fmt(m.tahun[y]!.rata!, 0) : "–")).join("|")),
+          axisTick: { show: false }, axisLine: { show: false },
+          axisLabel: { show: !sempit, fontSize: 11, color: C.ink, formatter: (v: string) => { const p = v.split("|"); return `{a|${p[0]}} {a|${p[1]}} {b|${p[2]}}`; },
+            rich: { a: { color: "#8a979c", width: 30, align: "right", fontFamily: "var(--font-num)" }, b: { fontWeight: 800, color: C.ink, width: 34, align: "right", fontFamily: "var(--font-num)" } } } },
+      ] as any,
+      series: [{ type: "custom", data, encode: { x: [0, 1], y: 2 },
+        renderItem: (_p: any, api: any) => {
+          const a = api.coord([api.value(0), api.value(2)]), b = api.coord([api.value(1), api.value(2)]);
+          const band = api.size([0, 1])[1], li = api.value(3), proj = api.value(5) === 1;
+          const h = li === 2 ? band * 0.3 : band * 0.16, top = a[1] - band * 0.4 + (li === 0 ? 0 : li === 1 ? band * 0.22 : band * 0.46);
+          const col = ISPU_COL[api.value(4)];
+          return { type: "rect", shape: { x: a[0], y: top, width: Math.max(2, b[0] - a[0]), height: h, r: 2 },
+            style: proj ? { fill: "rgba(0,0,0,0)", stroke: col, lineWidth: 1.5, lineDash: [4, 3] } : { fill: col, opacity: li === 2 ? 1 : li === 1 ? 0.6 : 0.4 } };
+        },
+        markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "solid", width: 1 },
+          label: { formatter: `kini ${pendek(terbit)}`, position: "end", fontSize: 10.5, fontWeight: 650, color: C.ink }, data: [{ xAxis: ts(terbit) + 864e5 }] } } as any],
     };
-  }, [baris, aman, bulan, nama, bIni, kode, sempit, lebar, hariBln, depan]);
-  return <Chart option={opt} height={labelY.length * 24 + 50} ariaLabel="Jumlah hari PM2.5 di atas 55 per bulan per lokasi"
-    onClick={(p) => { const v = p.value as number[] | undefined; if (v && baris[v[1]]) onPilih(baris[v[1]].code); }} />;
+  }, [st, label, terbit, kode, sempit, akhirLalu]);
+  return <Chart option={opt} height={st.length * 38 + 56} ariaLabel="Periode musim asap per lokasi 2024, 2025, dan 2026"
+    onClick={(p) => { const v = p.value as number[] | undefined; if (v && st[v[2]]) onPilih(st[v[2]].code); }} />;
 }
 
 /* ---------- perkiraan kasus napas di RS pasangan ---------- */

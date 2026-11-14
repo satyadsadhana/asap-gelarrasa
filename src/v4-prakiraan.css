@@ -134,3 +134,4 @@
   .pk-pilih { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
   .pk-pilih button { flex: none; }
 }
+.pk-legenda i.putus { background: transparent; border: 1.5px dashed var(--ink-soft); box-sizing: border-box; }

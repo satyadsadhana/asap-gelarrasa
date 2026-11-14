@@ -54,6 +54,42 @@ def kalender(a: pd.DataFrame, master: pd.DataFrame) -> list[dict]:
     return out
 
 
+def musim(a: pd.DataFrame, akhir: pd.Timestamp) -> list[dict]:
+    """Periode musim asap per stasiun per tahun: deretan hari PM2.5 > 55 (celah <= 10 hari digabung), yang terpanjang."""
+    w = a.pivot_table(index="tanggal", columns="kode_stasiun", values="pm25").asfreq("D")
+    out = []
+    for c in w.columns:
+        rec = {"code": c, "tahun": {}}
+        for y in (2024, 2025, 2026):
+            s = w[c][str(y)]
+            s = s[s.index <= akhir]
+            if s.notna().sum() < 60:
+                rec["tahun"][str(y)] = None
+                continue
+            atas = s.gt(BATAS).astype(float).where(s.notna()).ffill(limit=3).fillna(0).astype(bool)
+            hari = list(atas[atas].index)
+            runs, mulai, prev = [], None, None
+            for t in hari:
+                if mulai is None:
+                    mulai = t
+                elif (t - prev).days > 10:
+                    runs.append((mulai, prev)); mulai = t
+                prev = t
+            if mulai is not None:
+                runs.append((mulai, prev))
+            runs = [r for r in runs if (r[1] - r[0]).days >= 4]
+            if not runs:
+                rec["tahun"][str(y)] = {"mulai": None}
+                continue
+            m0, m1 = max(runs, key=lambda r: (r[1] - r[0]).days)
+            seg = s[m0:m1]
+            rec["tahun"][str(y)] = {"mulai": m0.strftime("%Y-%m-%d"), "akhir": m1.strftime("%Y-%m-%d"), "rata": r1(seg.mean(), 0),
+                                    "hari": int((seg > BATAS).sum()), "berlanjut": bool(y == akhir.year and m1 == s.dropna().index.max())}
+        if any(v and v.get("mulai") for v in rec["tahun"].values()):
+            out.append(rec)
+    return out
+
+
 def uji_tanda(vf: dict) -> list[dict]:
     res = []
     for r in vf["uji"]["per_horizon"]:
@@ -140,7 +176,7 @@ def main() -> None:
     vf = json.loads((OUT / "prakiraan_verifikasi.json").read_text(encoding="utf-8"))
     ar = json.loads((OUT / "prakiraan_arsip.json").read_text(encoding="utf-8"))
     md = json.loads((OUT / "model_dampak.json").read_text(encoding="utf-8"))
-    hasil = {"terbit": pk["terbit"], "kalender": kalender(a, master), "uji_tanda": uji_tanda(vf),
+    hasil = {"terbit": pk["terbit"], "kalender": kalender(a, master), "musim": musim(a, pd.Timestamp(pk["terbit"])), "uji_tanda": uji_tanda(vf),
              "kasus": kasus_rs(panel, md, pk, ar, master), "jam": jam_terburuk(pd.Timestamp(pk["terbit"]))}
     (OUT / "prakiraan_v6.json").write_text(json.dumps(hasil, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     k = hasil["kasus"]["uji"]
