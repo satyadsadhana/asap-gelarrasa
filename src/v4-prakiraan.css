@@ -155,3 +155,22 @@
   .pk-angka-item small { flex-basis: 100%; }
   .pk-angka-item b { font-size: 24px; }
 }
+
+/* v10: musim di atas, presisi palsu dihapus, temuan batas model */
+.pk-musim-stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 2px 0 6px; }
+.pk-musim-stat > div { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 14px; background: #fbf6f1; border: 1px solid #f3e3d4; }
+.pk-musim-stat b { font: 600 30px/1 var(--font-num); color: #8a3b12; letter-spacing: -0.02em; white-space: nowrap; }
+.pk-musim-stat b small { font-size: 15px; color: #b5815c; margin-left: 1px; }
+.pk-musim-stat span { font-size: 12.5px; line-height: 1.35; color: var(--ink); }
+.pk-musim-stat em { font-style: normal; font-weight: 750; }
+.pk-musim-stat .baru { background: #fdeee2; border-color: #f6cfae; }
+.pk-legenda i.garis { height: 3px; width: 16px; border-radius: 2px; background: #c3ced2; vertical-align: 3px; }
+.pk-legenda i.wajik { width: 9px; height: 9px; border-radius: 1px; background: var(--ink, #12313a); transform: rotate(45deg); margin-left: 2px; }
+.pk-legenda i.bulat { width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 1.3px solid var(--ink, #12313a); box-sizing: border-box; }
+.pk-angka-item.awas { background: #fdf1e7; }
+.pk-angka-item.awas small { color: #8a3b12; }
+.pk-days li.awal { box-shadow: inset 0 0 0 1.5px #f2b183; }
+.pk-days li .awas { font-size: 10px; font-weight: 750; color: #8a3b12; }
+.pk-temuan { display: flex; flex-direction: column; gap: 3px; margin-top: 12px; padding: 12px 14px; border-left: 3px solid #e85d04; border-radius: 0 12px 12px 0; background: #fbf6f1; font-size: 12.5px; line-height: 1.45; color: var(--ink); }
+.pk-temuan b { font-size: 13.5px; color: #8a3b12; }
+@media (max-width: 600px) { .pk-musim-stat { grid-template-columns: 1fr; } .pk-musim-stat b { font-size: 24px; } }
