@@ -684,9 +684,10 @@ function ujiOpt(Q: Kualitas[], nama: (c: string) => string): EChartsOption {
   return {
     tooltip: { formatter: (q: any) => `<b>${q.name}</b><br/>Galat besok ${fmt(q.value, 0)}% lebih kecil dari menyalin` },
     grid: { left: 8, right: 24, top: 10, bottom: 30, containLabel: true },
-    xAxis: { type: "value", min: (v: any) => Math.min(-5, Math.floor(v.min / 5) * 5), name: "% galat lebih kecil (besok)", nameLocation: "middle", nameGap: 22, axisLabel: { formatter: (v: number) => `${v}%` } },
+    visualMap: { show: false, type: "continuous", seriesIndex: 0, dimension: 0, min: 10, max: 26, inRange: { color: ["#8fd8cf", "#2ec4b6", "#0b7a75", "#0b4f5c"] } },
+    xAxis: { type: "value", min: (v: any) => Math.min(-5, Math.floor(v.min / 5) * 5), name: "% galat lebih kecil (besok)", nameLocation: "middle", nameGap: 22, axisLabel: { formatter: (v: number) => `${v}%` }, splitLine: { lineStyle: { type: "dashed", color: "#dbe7e9" } }, splitArea: { show: true, areaStyle: { color: ["rgba(46,196,182,0.035)", "rgba(255,255,255,0)"] } } },
     yAxis: { type: "category", data: rows.map((q) => nama(q.code)), axisTick: { show: false }, axisLabel: { fontSize: 11, color: C.ink } },
-    series: [{ type: "scatter", data: rows.map((q, i) => ({ value: +((q.skill_h1 ?? 0) * 100).toFixed(1), label: { show: true, position: "right", formatter: (v: any) => `${fmt(v.value, 0)}%`, fontSize: i === 0 || i === rows.length - 1 ? 11 : 9.5, fontWeight: i === 0 || i === rows.length - 1 ? 700 : 500, color: TEAL_INK } })), symbolSize: 10, itemStyle: { color: TEAL_INK, borderColor: "#fff", borderWidth: 1.5 },
+    series: [{ type: "scatter", data: rows.map((q, i) => ({ value: +((q.skill_h1 ?? 0) * 100).toFixed(1), label: { show: true, position: "right", formatter: (v: any) => `${fmt(v.value, 0)}%`, fontSize: i === 0 || i === rows.length - 1 ? 11 : 9.5, fontWeight: i === 0 || i === rows.length - 1 ? 700 : 500, color: TEAL_INK } })), symbolSize: 12, itemStyle: { borderColor: "#fff", borderWidth: 2, shadowBlur: 6, shadowColor: "rgba(11,85,99,0.35)" },
       markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "solid", width: 1 }, label: { formatter: "sama dengan menyalin", position: "insideEndTop", fontSize: 11 }, data: [{ xAxis: 0 }] } }] as any,
   };
 }

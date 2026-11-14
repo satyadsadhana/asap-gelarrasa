@@ -286,3 +286,44 @@
 @media (max-width: 900px) { .pk-batas-alur { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pk-batas-alur::before { display: none; } }
 @media (max-width: 480px) { .pk-batas-alur { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .pk-batas-alur li { animation: none; opacity: 1; transform: none; } }
+
+/* ---------- revisi visual: keterbatasan berwarna + panel "Seberapa Bisa Dipercaya?" ---------- */
+/* kartu keterbatasan: tiap kartu punya warna aksen sendiri */
+.pk-batas-alur li:nth-child(1) { --ac: #0b7a75; --ac-bg: #e0f3f1; }
+.pk-batas-alur li:nth-child(2) { --ac: #2f6fb3; --ac-bg: #e3eefa; }
+.pk-batas-alur li:nth-child(3) { --ac: #d4622a; --ac-bg: #fdeadf; }
+.pk-batas-alur li:nth-child(4) { --ac: #b8325a; --ac-bg: #fbe5ec; }
+.pk-batas-alur li:nth-child(5) { --ac: #6b4fb3; --ac-bg: #eee8fa; }
+.pk-batas h2 { display: flex; align-items: center; gap: 10px; }
+.pk-batas h2::before { content: ""; width: 6px; height: 22px; border-radius: 3px; background: linear-gradient(180deg, #0b7a75, #d4622a 55%, #6b4fb3); }
+.pk-batas-alur::before { border-top: 2px dashed transparent; border-image: linear-gradient(90deg, #0b7a75, #2f6fb3, #d4622a, #b8325a, #6b4fb3) 1; opacity: .55; }
+.pk-batas-alur li { overflow: hidden; background: linear-gradient(180deg, color-mix(in srgb, var(--ac-bg) 55%, #fff) 0%, #fff 60%);
+  box-shadow: 0 1px 0 rgba(13, 26, 34, .04), 0 0 0 1px color-mix(in srgb, var(--ac) 18%, var(--line)); }
+.pk-batas-alur li::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--ac), color-mix(in srgb, var(--ac) 40%, #fff)); }
+.pk-batas-alur li::after { content: ""; position: absolute; right: -26px; bottom: -26px; width: 84px; height: 84px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ac) 14%, transparent) 0%, transparent 70%); pointer-events: none; }
+.pk-batas-alur li:hover { box-shadow: 0 14px 28px -16px color-mix(in srgb, var(--ac) 60%, transparent), 0 0 0 1px color-mix(in srgb, var(--ac) 35%, var(--line)); }
+.pk-batas-alur svg { background: var(--ac-bg); stroke: var(--ac); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ac-bg) 60%, transparent); }
+.pk-batas-alur b { color: color-mix(in srgb, var(--ac) 35%, var(--ink)); }
+
+/* panel uji keandalan (hanya story-row di halaman ini, dikenali dari .pk-angka) */
+.story-row:has(.pk-angka) { position: relative; isolation: isolate; overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f4fbfa 55%, #e6f4f2 100%);
+  box-shadow: 0 0 0 1px rgba(11, 122, 117, .12), 0 24px 48px -32px rgba(11, 85, 99, .45); }
+.story-row:has(.pk-angka)::before { content: ""; position: absolute; z-index: -1; right: -120px; top: -140px; width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(46, 196, 182, .22) 0%, rgba(46, 196, 182, 0) 70%); pointer-events: none; }
+.story-row:has(.pk-angka)::after { content: ""; position: absolute; z-index: -1; left: -80px; bottom: -120px; width: 320px; height: 320px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 98, 42, .10) 0%, rgba(212, 98, 42, 0) 70%); pointer-events: none; }
+.story-row:has(.pk-angka) .story-chart { padding: 14px 10px 6px; border-radius: 20px; background: rgba(255, 255, 255, .78);
+  box-shadow: inset 0 0 0 1px rgba(11, 85, 99, .08); backdrop-filter: blur(2px); }
+.story-row:has(.pk-angka) .story-text h2 { position: relative; padding-top: 14px; }
+.story-row:has(.pk-angka) .story-text h2::before { content: ""; position: absolute; left: 0; top: 0; width: 44px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #0b7a75, #2ec4b6); }
+.story-row:has(.pk-angka) .story-big { background: linear-gradient(120deg, #0b5563 0%, #0b7a75 45%, #2ec4b6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.story-row:has(.pk-angka) .story-bignote { display: inline-block; padding: 4px 10px; border-radius: 8px; background: rgba(46, 196, 182, .12); color: #0b5563; }
+.story-row:has(.pk-angka) .pk-angka span { position: relative; overflow: hidden; background: #fff; border: 0; padding-top: 13px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ac) 22%, var(--line)), 0 8px 18px -14px color-mix(in srgb, var(--ac) 70%, transparent); }
+.story-row:has(.pk-angka) .pk-angka span::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--ac); }
+.story-row:has(.pk-angka) .pk-angka span:nth-child(1) { --ac: #0b7a75; }
+.story-row:has(.pk-angka) .pk-angka span:nth-child(2) { --ac: #d4622a; }
+.story-row:has(.pk-angka) .pk-angka span:nth-child(3) { --ac: #2f6fb3; }
+.story-row:has(.pk-angka) .pk-angka b { color: var(--ac); }
