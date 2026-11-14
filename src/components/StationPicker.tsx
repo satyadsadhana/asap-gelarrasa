@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { PULAU, useApp } from "../lib/state";
-import { PICK_COL, PICK_GLYPH } from "../lib/theme";
+import { MAKS_PILIH, PICK_COL, PICK_GLYPH } from "../lib/theme";
 
-/** Pemilih Stasiun Pilihan (maks. 3). Dipakai di bar atas dan di grafik garis. */
+/** Pemilih Stasiun Pilihan (maks. 5). Dipakai di bar atas dan di grafik garis. */
 export default function StationPicker({ label = "Stasiun pilihan", compact = false }: { label?: string; compact?: boolean }) {
   const app = useApp();
   const [adding, setAdding] = useState(false);
@@ -19,7 +19,7 @@ export default function StationPicker({ label = "Stasiun pilihan", compact = fal
           <button aria-label={`Hapus ${app.byCode[c]?.nama}`} onClick={() => app.togglePilihan(c)}>×</button>
         </span>
       ))}
-      {app.pilihan.length < 3 ? (adding ? (
+      {app.pilihan.length < MAKS_PILIH ? (adding ? (
         <select autoFocus className="pick-select" onBlur={() => setAdding(false)} onChange={(e) => { if (e.target.value) app.togglePilihan(e.target.value); setAdding(false); }}>
           <option value="">Pilih stasiun…</option>
           {byPulau.map(({ p, list }) => (
@@ -29,7 +29,7 @@ export default function StationPicker({ label = "Stasiun pilihan", compact = fal
           ))}
         </select>
       ) : <button className="chip" onClick={() => setAdding(true)} style={{ paddingRight: 10 }}>+ Tambah</button>)
-        : !compact && <span className="note" style={{ margin: 0 }}>maks. 3 · hapus satu untuk mengganti</span>}
+        : !compact && <span className="note" style={{ margin: 0 }}>maks. {MAKS_PILIH} · hapus satu untuk mengganti</span>}
       <button className="link-btn" onClick={() => app.set("pilih", null)} title="Kembalikan ke Marunda, Palangka Raya, Kototabang">Reset</button>
     </div>
   );

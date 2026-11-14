@@ -85,7 +85,8 @@ export default function Q4Dampak() {
     xAxis: { type: "category", data: lagRows.map((r) => r.x), axisLabel: { fontSize: 11, interval: 0, rotate: lagRows.length > 7 ? 30 : 0 } },
     yAxis: { type: "value", name: "RR per lipat dua", min: (v: any) => Math.min(0.9, Math.floor(v.min * 20) / 20) },
     series: [
-      { type: "bar", data: lagRows.map((r) => ({ value: r.rr, itemStyle: { color: r.plasebo ? C.otherSoft : C.focus } })),
+      { type: "bar", data: lagRows.map((r) => ({ value: r.rr, itemStyle: { color: r.plasebo ? C.otherSoft : C.focus },
+          label: { show: true, position: "insideBottom", distance: 4, formatter: fmt(r.rr, 2), fontSize: 10, fontWeight: 700, color: r.plasebo ? C.ink : "#fff" } })),
         markLine: { silent: true, symbol: "none", lineStyle: { color: C.inkSoft }, label: { show: false }, data: [{ yAxis: 1 }] } },
       { type: "custom", renderItem: (_p: any, api: any) => {
           const x = api.value(0), lo = api.coord([x, api.value(1)]), hi = api.coord([x, api.value(2)]);
@@ -114,7 +115,8 @@ export default function Q4Dampak() {
     tooltip: { trigger: "axis", axisPointer: { type: "line" }, valueFormatter: (v: any) => (v == null ? "–" : fmt(v, 2)) },
     axisPointer: { link: [{ xAxisIndex: "all" }] },
     legend: { top: 0, left: "center", data: wk.rows.map((r) => byCode[r.c].nama) },
-    grid: [{ left: 8, right: 16, top: 62, height: "32%" }, { left: 8, right: 16, top: "62%", bottom: 40 }],
+    // legenda bisa dua baris saat stasiun pilihan > 3
+    grid: [{ left: 8, right: 16, top: wk.rows.length > 3 ? 84 : 62, height: "30%" }, { left: 8, right: 16, top: "62%", bottom: 40 }],
     xAxis: [
       { type: "category", data: wk.weeks.map(fmtDate), gridIndex: 0, axisLabel: { show: false }, axisTick: { show: false } },
       { type: "category", data: wk.weeks.map(fmtDate), gridIndex: 1, axisLabel: { fontSize: 11 } },
@@ -186,9 +188,11 @@ export default function Q4Dampak() {
         <Card key="e" title={`Beban Kronis antar-RS (Ekologis, ρ = ${fmt(eco.rho, 2)})`}>
             <Chart height={320} option={{
               tooltip: { formatter: (p: any) => `<b>${byCode[p.data.code]?.nama}</b><br/>PM2.5 ${fmt(p.value[0])} ${UG}<br/>${fmt(p.value[1], 2)} kasus napas/hari per 100 TT` },
-              grid: { left: 8, right: 14, top: 14, bottom: 30 },
+              grid: { left: 8, right: 96, top: 14, bottom: 30 },
               xAxis: { type: "value", name: `Rata-rata PM2.5 (${UG})`, nameLocation: "middle", nameGap: 24 }, yAxis: { type: "value", name: "kasus napas / 100 TT / hari" },
-              series: [{ type: "scatter", symbolSize: 11, itemStyle: { color: C.focus }, label: { show: true, formatter: (p: any) => byCode[p.data.code]?.nama, position: "right", fontSize: 11 },
+              series: [{ type: "scatter", symbolSize: 11, itemStyle: { color: C.focus }, labelLayout: { hideOverlap: true }, emphasis: { label: { show: true } },
+                label: { show: true, distance: 7, formatter: (p: any) => `{n|${byCode[p.data.code]?.nama}} {v|${fmt(p.value[1], 2)}}`, position: "right", textBorderColor: "#fff", textBorderWidth: 2,
+                  rich: { n: { fontSize: 11, color: C.ink }, v: { fontSize: 9.5, color: C.inkSoft } } },
                 data: ecoV.map((r) => ({ value: [r.pm25, r.resp_per100], code: r.code })) }],
             }} />
             <p className="note">RS Tipe A & RS-24–27 dikeluarkan. Ini perbandingan antar wilayah, bukan efek harian.</p>

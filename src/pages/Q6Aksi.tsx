@@ -219,7 +219,7 @@ export default function Q6Aksi() {
           </div>
         </Card>
 
-        <Prioritas h={h} m={md} rr={rrf} byCode={byCode} sk={sk} per={{ key: per, ...PER[per] }} periodeTahunan={TAHUNAN} />
+        <Prioritas h={h} m={md} rr={rrf} byCode={byCode} sk={sk} per={{ key: per, ...PER[per] }} periodeTahunan={TAHUNAN} onReset={() => { setJenis("batas"); setBatas(55); }} />
       </>}
       extra={
         <section className="recs-wrap" id="tujuh-langkah">

@@ -12,6 +12,30 @@ import { dateAt, dayMask, PERIODE, useApp, useStationFilter } from "../lib/state
 import { ISPU_COL, ISPU_LAB, ispuCat } from "../lib/theme";
 import type { AngkaKunci, Daily, Weekly } from "../lib/types";
 
+/** Alur kecil: data mentah → disaring → siap dibaca. Sengaja tenang, hanya penanda. */
+function AlurBersih() {
+  return (
+    <Link to="/tentang" className="alur" aria-label="Data mentah dibersihkan sebelum dihitung: sensor beku, satuan keliru, dan stasiun rusak dipisahkan. Lihat prosesnya">
+      <svg viewBox="0 0 300 64" aria-hidden>
+        <g className="alur-step">
+          <polyline className="mentah" points="6,40 14,30 20,44 28,22 34,36 40,36 46,36 52,36 58,18 64,40" />
+          <circle cx="44" cy="36" r="2.4" className="titik-beku" />
+        </g>
+        <path className="panah" d="M80 32h30" />
+        <g className="alur-step tengah">
+          <path className="saring" d="M128 16h40l-14 18v12l-12 6V34z" />
+        </g>
+        <path className="panah" d="M184 32h30" />
+        <g className="alur-step">
+          <path className="bersih" d="M228 40C240 38 246 26 256 26S272 34 294 22" />
+        </g>
+      </svg>
+      <span className="alur-lab"><b>Data mentah</b><b>Disaring</b><b>Siap dibaca</b></span>
+      <small>Sensor beku, satuan keliru, dan stasiun rusak dipisahkan dulu · <u>lihat prosesnya</u></small>
+    </Link>
+  );
+}
+
 export default function Beranda() {
   const d = useData<[Weekly, Daily, AngkaKunci]>("weekly_station", "daily", "angka_kunci");
   const { periode, byCode, openProfil, pulau, kawasan } = useApp();
@@ -104,6 +128,7 @@ export default function Beranda() {
         <Stage3D values={values} visible={filt} height="100%" autoRotate step={pos != null ? 140 : undefined}
           fallback={<StationMap values={values} visible={filt} label={`PM2.5 ${label}`} height={520} />} />
         <div className="hero3d-text">
+          <span className="brand-eyebrow">Fogline</span>
           <h1>Udara yang Kita Hirup</h1>
           <p>Setiap tiang adalah satu stasiun pemantau. Makin tinggi tiangnya, makin pekat PM2.5 di udara. Putar waktunya untuk melihat asap datang dari Kalimantan dan Sumatra.</p>
           <div className="hero-cta">
@@ -126,8 +151,7 @@ export default function Beranda() {
           selama <span className="n">1.018</span> hari, dari 1 Januari 2024 sampai 14 Oktober 2026.
         </p>
         <aside>
-          <span className="tag">Dataset sintetis dari panitia Gelar Rasa 2026</span>
-          <span>Sebelum dihitung, data dibersihkan dulu: sensor beku, satuan keliru, dan stasiun rusak dipisahkan. <Link to="/tentang">Lihat prosesnya</Link></span>
+          <AlurBersih />
         </aside>
       </section>
 

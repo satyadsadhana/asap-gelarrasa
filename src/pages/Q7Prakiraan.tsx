@@ -191,6 +191,8 @@ export default function Q7Prakiraan() {
           note={`stasiun, dibanding menyalin hari ini · selisih ${fmt(h1.mae_salin - h1.mae_model, 1)} ${UG}`} />
       </>}
       main={<>
+        <Langkah n={1} tone="b" t="Sampai Kapan Musim Asap?" d="Dibaca dari pola 2024 dan 2025, bukan dari model.">
+
         <Card title={akhirUmum ? `Pada 2024 dan 2025, Level Turun di ${pendek(addDays(geser(akhirUmum), 1))}` : "Musim Asap per Lokasi"}
           sub={<>Batang = musim asap 2026, saat PM2.5 di atas 55. Warna makin gelap, makin parah.{akhirUmum && sisa != null && sisa > 0 && <> Kalau pola dua tahun itu berulang, sisa musim tinggal {sisa} hari dari {pendek(pk.terbit)}. Ini pola kalender data, bukan ramalan model.</>}</>}>
           <div className="pk-musim-stat">
@@ -212,7 +214,10 @@ export default function Q7Prakiraan() {
             {musimSt.filter((m) => beku.has(m.code)).map((m) => <span key={m.code}>{labelKode(m.code)} bertanda <b>data beku</b>: sensornya pernah membeku, jadi rata-ratanya sama persis tiap tahun. </span>)}
           </p>}
         </Card>
+        </Langkah>
 
+        <Langkah n={2} tone="c" t="Lihat Satu Lokasi" d="Pilih lokasi untuk melihat 7 hari ke depan, grafik 30 hari terakhir, dan uji di tanggal lain.">
+        <span id="pk-lokasi" className="pk-jangkar" />
         <Card title={mode === "terbit" || besok.akt == null ? `${label(sel)}: ${ISPU_LAB[ispuIdx(besok.nilai)]} ${mode === "terbit" ? "Besok" : `pada ${pendek(besok.tgl)}`}`
           : `${label(sel)} ${pendek(besok.tgl)}: Diramal ${ISPU_LAB[ispuIdx(besok.nilai)]}, Terjadi ${ISPU_LAB[ispuIdx(besok.akt)]}`}
           sub="Garis teal = yang diramal sehari sebelumnya. Arahkan kursor ke grafik untuk angka lengkap.">
@@ -246,17 +251,29 @@ export default function Q7Prakiraan() {
           </ol>
           <p className="note">Kotak bergaris putus: belum terbukti lebih tepat dari menyalin hari ini.
             {sel.kembar && <> Data Palangka Raya dan Sampit di sumber hampir identik (korelasi 0,99995), jadi ditampilkan sebagai satu lokasi.</>} <Lencana k={vf.kualitas.find((q) => q.code === sel.code)} /></p>
-          <div className="pk-temuan">
-            <b>{vf.struktur_bulanan.awal_lonjakan_tgl1} dari {vf.struktur_bulanan.awal_lonjakan} awal musim asap jatuh di tanggal 1.</b>
-            <span>Hari-hari sebelumnya tidak memberi tanda, jadi angka harian tidak bisa mendahuluinya. Yang bisa dipegang: kapan musim mulai dan selesai, dan berapa hari di atas 55.</span>
-          </div>
         </Card>
+        </Langkah>
 
+        <Langkah n={3} tone="d" t="Apa Artinya bagi Rumah Sakit?" d="Perkiraan kasus napas di rumah sakit pasangan lokasi terpilih.">
         <Card title={rs ? `${rs.nama}: ${rsBeda >= 0 ? "+" : "−"}${fmt(Math.abs(rsBeda), 0)} Kasus Napas dalam 7 Hari` : `${label(sel)}: Tidak Ada Rumah Sakit Pasangan`}
           sub={rs ? `Perkiraan ${fmt(rsTot, 0)} kasus sampai ${akhir7}, dibanding ${fmt(rs.rata7 * 7, 0)} pada 7 hari terakhir.` : undefined}
           note={rs ? `Rumus sama dengan halaman Simulasi. Uji 2026: galat ${pct(ks.lompat.turun)} lebih kecil dari rata-rata 7 hari saat PM2.5 melompat. PM2.5 musim 2026 jauh di atas rentang data pembentuk rumus, jadi angka kasus bersifat ekstrapolasi.` : undefined}>
           {rs ? <KasusRS r={rs} terbit={v6.terbit} /> : <p className="note">Pilih lokasi lain untuk melihat dampak ke rumah sakit.</p>}
         </Card>
+        </Langkah>
+
+        <section className="pk-batas" aria-labelledby="pk-batas-h">
+          <h2 id="pk-batas-h">Keterbatasan Prakiraan Ini</h2>
+          <ol className="pk-batas-alur">
+            {BATAS.map((x, i) => (
+              <li key={x.t} style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
+                <svg viewBox="0 0 24 24" aria-hidden>{x.ico}</svg>
+                <b>{x.t}</b>
+                <span>{x.d}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
       </>}
       stories={
         <Story tone="focus" flip title="Seberapa Bisa Dipercaya?"
@@ -272,12 +289,37 @@ export default function Q7Prakiraan() {
       }
       more={[
         <div key="a" data-title="Akurasi"><Akurasi U={U} V={Vd} vf={vf} v6={v6} /></div>,
+        <div key="t" data-title="Tabel Uji Statistik"><Akurasi U={U} V={Vd} vf={vf} v6={v6} tabel /></div>,
         <div key="k" data-title="Kualitas Data"><TabelKualitas vf={vf} nama={nama} /></div>,
         <div key="c" data-title="Cara Kerja"><CaraKerja vf={vf} sb={vf.struktur_bulanan} /></div>,
       ]}
     />
   );
 }
+
+/* ---------- pita langkah: memisahkan bagian halaman dengan latar dan nomor ---------- */
+function Langkah({ n, t, d, tone, children }: { n: number; t: string; d: string; tone: "a" | "b" | "c" | "d"; children: ReactNode }) {
+  return (
+    <section className={`pk-band pk-band-${tone}`} aria-label={t}>
+      <header className="pk-step"><span className="pk-step-n">{n}</span><div><h2>{t}</h2><p>{d}</p></div></header>
+      {children}
+    </section>
+  );
+}
+
+/* ---------- keterbatasan: lima kartu kecil berurutan ---------- */
+const BATAS: { t: string; d: string; ico: ReactNode }[] = [
+  { t: "Data 3 tahun", d: "Pola musim dari 2 musim lengkap (2024–2025).",
+    ico: <><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></> },
+  { t: "Tanpa hujan & titik api", d: "Pemicu utama asap tidak ada di dataset; data lain dilarang aturan lomba.",
+    ico: <><path d="M7 15a4 4 0 0 1 .5-8A5 5 0 0 1 17 8a3.5 3.5 0 0 1 0 7z" /><path d="M9 18l-1 2M13 18l-1 2M17 18l-1 2" /></> },
+  { t: "Lonjakan tak terdahului", d: "Level berganti tiap tanggal 1, tanpa tanda di hari sebelumnya.",
+    ico: <><path d="M3 17h6V9h6v-4h6" /><path d="M18 2l3 3-3 3" /></> },
+  { t: "Kasus RS kasar", d: "PM2.5 2026 di luar rentang data rumus: ekstrapolasi.",
+    ico: <><path d="M4 20V8l8-4 8 4v12z" /><path d="M12 9v6M9 12h6" /></> },
+  { t: "Hanya 7 hari", d: "Alat bantu perencanaan, bukan peringatan resmi.",
+    ico: <><circle cx="12" cy="12" r="8" /><path d="M12 8v4l3 2" /></> },
+];
 
 /* ---------- lencana kualitas data ---------- */
 function Lencana({ k }: { k?: Kualitas }) {
@@ -384,10 +426,36 @@ function Detail({ s, terbit, batas, jejak }: { s: Tampil; terbit: string; batas:
 }
 
 /* ---------- telusuri: akurasi ---------- */
-function Akurasi({ U, V, vf, v6 }: { U: PH[]; V: PH[]; vf: Verif; v6: V6 }) {
+function Akurasi({ U, V, vf, v6, tabel = false }: { U: PH[]; V: PH[]; vf: Verif; v6: V6; tabel?: boolean }) {
   const kd = vf.uji.keandalan.find((k) => k.h === 7);
+  const galatOpt: EChartsOption = {
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, valueFormatter: (v: any) => `${fmt(v, 2)} ${UG}` },
+    legend: { top: 0, data: ["Prakiraan model", "Menyalin hari ini"], textStyle: { fontSize: 12 }, icon: "circle" },
+    grid: { left: 8, right: 12, top: 34, bottom: 8, containLabel: true },
+    xAxis: { type: "category", data: U.map((r) => `H+${r.h}`), axisTick: { show: false }, axisLabel: { fontSize: 11, fontWeight: 650 } },
+    yAxis: { type: "value", name: `galat rata-rata (${UG})`, nameTextStyle: { align: "left" }, splitLine: { lineStyle: { color: "#edf2f3" } } },
+    series: [
+      // garis penghubung model -> menyalin (jarak = keunggulan)
+      { type: "custom", silent: true, tooltip: { show: false }, z: 1, data: U.map((r, i) => [i, r.mae_model, r.mae_salin]),
+        renderItem: (_p: any, api: any) => { const a = api.coord([api.value(0), api.value(1)]), b = api.coord([api.value(0), api.value(2)]);
+          return { type: "line", shape: { x1: a[0], y1: a[1], x2: b[0], y2: b[1] }, style: { stroke: "#c9d6da", lineWidth: 3, lineCap: "round" } }; } } as any,
+      { name: "Menyalin hari ini", type: "scatter", symbolSize: 12, z: 2, data: U.map((r) => r.mae_salin), itemStyle: { color: GREY, borderColor: "#fff", borderWidth: 1.5 },
+        label: { show: true, position: "top", fontSize: 9.5, color: C.inkSoft, formatter: (p: any) => fmt(p.value, 1) }, animationDelay: (i: number) => i * 70 + 35 },
+      { name: "Prakiraan model", type: "scatter", symbolSize: 12, z: 3, data: U.map((r) => r.mae_model), itemStyle: { color: TEAL_INK, borderColor: "#fff", borderWidth: 1.5 },
+        label: { show: true, position: "bottom", fontSize: 9.5, color: C.ink, formatter: (p: any) => fmt(p.value, 1) }, animationDelay: (i: number) => i * 70 },
+    ],
+  };
   return (
     <div className="pk-tab-wrap">
+      {!tabel && <div className="pk-akurasi">
+        <Chart option={galatOpt} height={240} ariaLabel="Galat prakiraan model dibanding menyalin nilai hari ini, per horizon" />
+        <ul className="pk-fakta">
+          <li><b>{skillTxt(U[0].skill)}</b><span>galat besok lebih kecil dari menyalin hari ini, di {U[0].stasiun_menang[0]} dari {U[0].stasiun_menang[1]} stasiun</span></li>
+          <li><b>{skillTxt(U[U.length - 1].skill)}</b><span>keunggulan H+7; setelah koreksi Holm {U.filter((r) => r.nyata).length === 1 ? "hanya H+1" : `${U.filter((r) => r.nyata).length} horizon`} yang lolos uji</span></li>
+          <li><b>{pct(U.reduce((a, r) => a + r.cakupan80, 0) / U.length)}</b><span>hari jatuh di rentang 80% (target 80%)</span></li>
+        </ul>
+      </div>}
+      {tabel && <div className="pk-lebih-isi">
       <table className="pk-tab">
         <thead><tr>
           <th>Horizon</th><th>Model</th><th>Salin</th><th>SES</th><th>Ridge/AR</th><th>LightGBM Murni</th><th>Keunggulan [95%]</th><th>Uji DM (Holm)</th>
@@ -435,6 +503,7 @@ function Akurasi({ U, V, vf, v6 }: { U: PH[]; V: PH[]; vf: Verif; v6: V6 }) {
           <p className="note">Galat rata-rata kasus napas per hari, 24 RS, Jan–Okt 2026, H+1 sampai H+7. Di data ini kasus dibangkitkan dari PM2.5, jadi hubungannya lebih kuat daripada di dunia nyata.</p>
         </div>
       </div>
+      </div>}
       <p className="note"><b>Kenapa R² tidak dipakai:</b> data harian ini sangat halus (median perubahan {fmt(vf.struktur_bulanan.median_ubah_harian_pct, 1)}% per hari, autokorelasi {fmt(vf.struktur_bulanan.autokorelasi_lag1, 3)}), sehingga menyalin nilai hari ini pun sudah memberi R² mendekati 1. Ukuran yang jujur adalah keunggulan terhadap pembanding.</p>
     </div>
   );
@@ -442,8 +511,23 @@ function Akurasi({ U, V, vf, v6 }: { U: PH[]; V: PH[]; vf: Verif; v6: V6 }) {
 
 /* ---------- telusuri: kualitas data ---------- */
 function TabelKualitas({ vf, nama }: { vf: Verif; nama: (c: string) => string }) {
+  const urut = [...vf.kualitas].sort((a, b) => b.cakupan - a.cakupan);
   return (
     <div className="pk-tab-wrap">
+      <ol className="pk-kual">
+        {urut.map((q, i) => (
+          <li key={q.code} className={q.diramal ? "" : "luar"} style={{ "--d": `${i * 25}ms` } as React.CSSProperties}>
+            <span className="nm">{nama(q.code)}</span>
+            <span className="bar"><i style={{ width: `${Math.max(1, q.cakupan * 100)}%` }} /></span>
+            <b>{pct(q.cakupan)}</b>
+            <span className="cat">{q.diramal ? (q.skill_h1 != null ? `${skillTxt(q.skill_h1)} vs menyalin` : "diramal") : "tidak diramal"}{q.lencana.filter((l) => l !== "sinyal kembar").map((l) => <em key={l}>{l}</em>)}</span>
+          </li>
+        ))}
+      </ol>
+      <p className="note">Batang = porsi hari dengan data sah, 2024–2026. Lokasi pudar tidak diramal karena datanya kurang.</p>
+      <details className="pk-lebih">
+        <summary><span>Tabel kualitas data lengkap</span><i aria-hidden /></summary>
+        <div className="pk-lebih-isi">
       <table className="pk-tab">
         <thead><tr><th>Stasiun</th><th>Alat</th><th>Hari Sah</th><th>2026</th><th>Celah Terpanjang</th><th>Rentang Tepat H+1</th><th>Keunggulan H+1</th><th>Catatan</th></tr></thead>
         <tbody>{vf.kualitas.map((q) => (
@@ -455,6 +539,8 @@ function TabelKualitas({ vf, nama }: { vf: Verif; nama: (c: string) => string })
             <td className="kiri">{q.lencana.join(", ") || "–"}</td>
           </tr>))}</tbody>
       </table>
+        </div>
+      </details>
       <p className="note">Lubang data terpusat di sedikit stasiun; sisanya lengkap. Fitur model berupa selisih log, sehingga bias pengali antar-alat (BAM, optik, sensor murah) ikut hilang. Rentang 80% dikalibrasi per stasiun. Ramalan hanya terbit bila minimal 4 dari 7 hari terakhir sah. Detail sensor: Bab Jaringan.</p>
     </div>
   );
@@ -560,8 +646,8 @@ function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih, beku
         markArea: akhir && akhir > kini ? { silent: true, itemStyle: { color: "rgba(232,93,4,0.07)" }, label: { show: false },
           data: [[{ xAxis: kini }, { xAxis: akhir }]] } : undefined,
         markLine: { silent: true, symbol: "none", data: [
-          { xAxis: kini, lineStyle: { color: C.ink, type: "solid", width: 1.2 }, label: { formatter: `kini ${pendek(terbit)}`, position: "start", distance: 4, fontSize: 11, fontWeight: 700, color: C.ink } },
-          ...(akhir ? [{ xAxis: akhir, lineStyle: { color: RAMP[5], type: "dashed", width: 1.4 }, label: { formatter: `turun ${pendek(addDays(geser(akhirUmum!), 1))} (2024–2025)`, position: "end", fontSize: 11, fontWeight: 800, color: RAMP[5] } }] : []),
+          { xAxis: kini, lineStyle: { color: C.ink, type: "solid", width: 1.2 }, label: { formatter: `kini ${pendek(terbit)}`, position: "end", align: "right", padding: [0, 6, 0, 0], distance: 4, fontSize: 10.5, fontWeight: 700, color: C.ink } },
+          ...(akhir ? [{ xAxis: akhir, lineStyle: { color: RAMP[5], type: "dashed", width: 1.4 }, label: { formatter: `turun ${pendek(addDays(geser(akhirUmum!), 1))} (2024–2025)`, position: "end", align: "left", padding: [0, 0, 0, 6], fontSize: 11, fontWeight: 800, color: RAMP[5] } }] : []),
         ] } } as any],
     };
   }, [st, label, terbit, kode, sempit, akhirLalu, akhir, kini, akhirUmum, beku]);
@@ -600,7 +686,7 @@ function ujiOpt(Q: Kualitas[], nama: (c: string) => string): EChartsOption {
     grid: { left: 8, right: 24, top: 10, bottom: 30, containLabel: true },
     xAxis: { type: "value", min: (v: any) => Math.min(-5, Math.floor(v.min / 5) * 5), name: "% galat lebih kecil (besok)", nameLocation: "middle", nameGap: 22, axisLabel: { formatter: (v: number) => `${v}%` } },
     yAxis: { type: "category", data: rows.map((q) => nama(q.code)), axisTick: { show: false }, axisLabel: { fontSize: 11, color: C.ink } },
-    series: [{ type: "scatter", data: rows.map((q, i) => ({ value: +((q.skill_h1 ?? 0) * 100).toFixed(1), label: { show: i === 0 || i === rows.length - 1, position: "right", formatter: (v: any) => `${fmt(v.value, 0)}%`, fontSize: 11, fontWeight: 700, color: TEAL_INK } })), symbolSize: 10, itemStyle: { color: TEAL_INK, borderColor: "#fff", borderWidth: 1.5 },
+    series: [{ type: "scatter", data: rows.map((q, i) => ({ value: +((q.skill_h1 ?? 0) * 100).toFixed(1), label: { show: true, position: "right", formatter: (v: any) => `${fmt(v.value, 0)}%`, fontSize: i === 0 || i === rows.length - 1 ? 11 : 9.5, fontWeight: i === 0 || i === rows.length - 1 ? 700 : 500, color: TEAL_INK } })), symbolSize: 10, itemStyle: { color: TEAL_INK, borderColor: "#fff", borderWidth: 1.5 },
       markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "solid", width: 1 }, label: { formatter: "sama dengan menyalin", position: "insideEndTop", fontSize: 11 }, data: [{ xAxis: 0 }] } }] as any,
   };
 }

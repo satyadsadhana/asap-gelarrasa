@@ -20,12 +20,24 @@ type SortKey = "code" | "grade" | "hari_valid_%" | "imputasi_%" | "baris_sensor_
 
 /** shortcut: salinan Tabel 3.5 laporan (laporan/build_docx.py); ubah keduanya bersamaan. */
 const PRIO = [
-  { w: "Kalimantan Selatan & Timur", st: ["BJB-01", "SM2-01"], why: "Pulau paling pekat (55,9 µg/m³), tapi Banjarbaru grade D dan Samarinda grade C.", act: "Ganti/kalibrasi sensor, tambah titik gambut Kalsel" },
-  { w: "Koridor gambut Kalimantan Tengah", st: ["KTG-01", "KTG-02"], why: "Memburuk +295%, tapi dua dari tiga stasiun memberi deret yang sama.", act: "Pindah satu unit kembar setelah verifikasi lapangan" },
-  { w: "Muaro Jambi", st: ["JMB-02"], why: "JMB-02 rusak (0,5% data) dan hanya 0,87 km dari JMB-01.", act: "Pasang ulang di gambut Mestong" },
-  { w: "Papua Selatan", st: ["MER-01"], why: "Merauke hanya 1% hari valid: satu provinsi tanpa data sah.", act: "Pulihkan MER-01" },
-  { w: "Sumatra Barat & Riau", st: ["KTB-01"], why: "Kototabang (latar bersih) ikut naik 89% pada Juli–14 Oktober 2026 dibanding periode sama 2024.", act: "Titik antara di jalur sebaran asap" },
+  { w: "Kalimantan Selatan & Timur", st: ["BJB-01", "SM2-01"], why: "Pulau paling pekat (55,9 µg/m³), tapi Banjarbaru grade D dan Samarinda grade C.", act: "Ganti/kalibrasi sensor, tambah titik gambut Kalsel", ico: "kalibrasi" },
+  { w: "Koridor gambut Kalimantan Tengah", st: ["KTG-01", "KTG-02"], why: "Memburuk +295%, tapi dua dari tiga stasiun memberi deret yang sama.", act: "Pindah satu unit kembar setelah verifikasi lapangan", ico: "pindah" },
+  { w: "Muaro Jambi", st: ["JMB-02"], why: "JMB-02 rusak (0,5% data) dan hanya 0,87 km dari JMB-01.", act: "Pasang ulang di gambut Mestong", ico: "pasang" },
+  { w: "Papua Selatan", st: ["MER-01"], why: "Merauke hanya 1% hari valid: satu provinsi tanpa data sah.", act: "Pulihkan MER-01", ico: "pulihkan" },
+  { w: "Sumatra Barat & Riau", st: ["KTB-01"], why: "Kototabang (latar bersih) ikut naik 89% pada Juli–14 Oktober 2026 dibanding periode sama 2024.", act: "Titik antara di jalur sebaran asap", ico: "jalur" },
 ];
+
+/** Piktogram kecil untuk tiap jenis aksi (garis tipis, satu warna). */
+function AksiIkon({ k }: { k: string }) {
+  const g: Record<string, JSX.Element> = {
+    kalibrasi: <><rect x="7" y="9" width="10" height="9" rx="2" /><path d="M10 9V6h4v3M9.5 13.5h5" /><path d="M18.5 4.5l1.5 1.5-3 3" /></>,
+    pindah: <><circle cx="7" cy="12" r="2.5" /><circle cx="17" cy="12" r="2.5" /><path d="M10 9.5c1.3-1.4 2.7-1.4 4 0M14 14.5c-1.3 1.4-2.7 1.4-4 0" /></>,
+    pasang: <><path d="M12 20s-5-5.2-5-9a5 5 0 0 1 10 0c0 3.8-5 9-5 9z" /><path d="M12 8.5v5M9.5 11h5" /></>,
+    pulihkan: <><path d="M18 12a6 6 0 1 1-2-4.5" /><path d="M18 5v3.5h-3.5" /><circle cx="12" cy="12" r="1.6" /></>,
+    jalur: <><path d="M4 18c3-1 4-5 8-6s5-4 8-6" strokeDasharray="2 2.5" /><circle cx="12" cy="12" r="2.6" /></>,
+  };
+  return <svg className="aksi-ikon" viewBox="0 0 24 24" aria-hidden>{g[k]}</svg>;
+}
 
 export default function Q5Jaringan() {
   const d = useData<[Score[], Prio[], Pairs, Anom, Summary[]]>("scorecard", "priority", "pairs", "anomaly", "station_summary");
@@ -62,7 +74,9 @@ export default function Q5Jaringan() {
     series: [{
       type: "scatter", symbolSize: 12,
       data: prio.map((r) => ({ value: [r["hari_valid_%"], r.skor_risiko], code: r.code, itemStyle: { color: KAT_COL[r.kategori], borderColor: pick(r.code) ?? "#fff", borderWidth: pick(r.code) ? 3 : 1 },
-        label: { show: r.kategori !== "Andal", formatter: r.code, position: "right", fontSize: 11, fontWeight: 700 } })),
+        label: { show: true, formatter: r.kategori !== "Andal" ? `{c|${r.code}} {v|${fmt(r.skor_risiko, 0)}}` : `{v|${fmt(r.skor_risiko, 0)}}`, position: r.kategori !== "Andal" ? "right" : "left",
+          rich: { c: { fontSize: 11, fontWeight: 700 }, v: { fontSize: 9.5, color: C.inkSoft } } } })),
+      labelLayout: { hideOverlap: true },
       markArea: { silent: true, itemStyle: { color: "rgba(180,35,24,0.06)", borderColor: "rgba(180,35,24,0.35)", borderWidth: 1 }, label: { show: true, position: "insideTopLeft", formatter: "Prioritas", color: C.alert, fontWeight: 700, fontSize: 11 },
         data: [[{ xAxis: 60, yAxis: 50 }, { xAxis: 90, yAxis: 100 }]] },
     }],
@@ -109,7 +123,7 @@ export default function Q5Jaringan() {
               <li key={r.w}>
                 <span className="n">{k + 1}</span>
                 <div><b>{r.w}</b> <small className="prio-st">{r.st.map((c) => `${byCode[c]?.nama ?? c} · ${c}`).join(", ")}</small><p>{r.why}</p></div>
-                <span className="act">{r.act}</span>
+                <span className={`prio-aksi a-${r.ico}`} style={{ animationDelay: `${k * 90}ms` }}><AksiIkon k={r.ico} /><span><small>Aksi</small>{r.act}</span></span>
               </li>
             ))}
           </ol>

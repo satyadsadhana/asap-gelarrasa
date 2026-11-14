@@ -119,7 +119,7 @@ export default function TimeSeries({ daily }: { daily: Daily }) {
       <div className="card-head">
         <div>
           <h2>PM2.5 dari Waktu ke Waktu</h2>
-          <p className="sub">Bandingkan hingga 3 stasiun. Pita latar = kategori ISPU. Skala log membuat stasiun bersih dan stasiun berasap sama-sama terbaca. Geser slider di bawah untuk memilih rentang waktu.</p>
+          <p className="sub">Bandingkan hingga 5 stasiun. Pita latar = kategori ISPU. Skala log membuat stasiun bersih dan stasiun berasap sama-sama terbaca. Geser slider di bawah untuk memilih rentang waktu.</p>
         </div>
       </div>
       <div className="ts-ctrl">

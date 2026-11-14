@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { Station } from "./types";
-import { PICK_COL, PICK_SYMBOL } from "./theme";
+import { MAKS_PILIH, PICK_COL, PICK_SYMBOL } from "./theme";
 
 export const PERIODE = {
   semua: { label: "2024 – 14 Okt 2026", from: "2024-01-01", to: "2026-10-14" },
@@ -48,11 +48,11 @@ export function StateProvider({ stations, children }: { stations: Station[]; chi
     setSp((p) => { const n = new URLSearchParams(p); if (v == null || v === "") n.delete(k); else n.set(k, v); return n; }, { replace: true });
   }, [setSp]);
   const raw = sp.get("pilih") ?? savedPick;
-  const pilihan = raw == null ? DEFAULT_PILIHAN : raw.split(",").filter((c) => byCode[c]).slice(0, 3);
-  const setPilihan = useCallback((codes: string[]) => set("pilih", codes.slice(0, 3).join(",")), [set]);
+  const pilihan = raw == null ? DEFAULT_PILIHAN : raw.split(",").filter((c) => byCode[c]).slice(0, MAKS_PILIH);
+  const setPilihan = useCallback((codes: string[]) => set("pilih", codes.slice(0, MAKS_PILIH).join(",")), [set]);
   const togglePilihan = useCallback((code: string) => {
     if (pilihan.includes(code)) setPilihan(pilihan.filter((c) => c !== code));
-    else if (pilihan.length < 3) setPilihan([...pilihan, code]);
+    else if (pilihan.length < MAKS_PILIH) setPilihan([...pilihan, code]);
     else setPilihan([...pilihan.slice(1), code]);
   }, [pilihan, setPilihan]);
   const periode = (sp.get("periode") as PeriodeKey) in PERIODE ? (sp.get("periode") as PeriodeKey) : "semua";

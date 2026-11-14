@@ -17,6 +17,8 @@ export type Periode = { key: string; label: string; pendek: string; from: string
 type Props = {
   h: HospitalDaily; m: ModelDampak; rr: RRFile; byCode: Record<string, Station>;
   sk: Skenario; per: Periode; periodeTahunan: Periode[];
+  /** Kembalikan simulator ke skenario awal (batas harian 55). */
+  onReset?: () => void;
 };
 
 /** Warna peran (emphasis): pilihan model = toska, sisanya abu; pendatang baru = oranye gambut. */
@@ -32,7 +34,7 @@ let geoState: "unknown" | "ok" | "none" = "unknown";
 const loadGeo = () => fetch("/data/indonesia.geojson").then((r) => (r.ok ? r.json() : Promise.reject()))
   .then((g) => { echarts.registerMap("indonesia", g); geoState = "ok"; }).catch(() => { geoState = "none"; });
 
-export default function Prioritas({ h, m, rr, byCode, sk, per, periodeTahunan }: Props) {
+export default function Prioritas({ h, m, rr, byCode, sk, per, periodeTahunan, onReset }: Props) {
   const [outcome, setOutcome] = useState("resp_admissions_under5");
   const [K, setK] = useState(5);
   const kandidat = useMemo(() => kandidatDari(h, (c) => byCode[c]?.grade), [h, byCode]);
@@ -67,6 +69,10 @@ export default function Prioritas({ h, m, rr, byCode, sk, per, periodeTahunan }:
               <span>{daftar(keluar.map(nama))} tidak dinilai karena data sensornya terlalu banyak bolong. Data sintetis: efek PM2.5 di sini lebih besar dari studi nyata (sekitar 2,5–4,8% per 10 µg/m³ pada anak), jadi angka dibaca sebagai perbandingan antarwilayah.</span>
             </InfoTip>
           </p>
+          {!(s.jenis === "batas" && s.nilai === 55) && <p className="alok-ikut">
+            Bagian ini mengikuti skenario simulator di atas ({kebijakan}).
+            {onReset && <button className="go-link" onClick={onReset}><span>Kembali ke batas 55</span><i aria-hidden>↺</i></button>}
+          </p>}
         </div>
         <div className="alok-ctrl">
           <select className="pick-select" value={outcome} onChange={(e) => setOutcome(e.target.value)} aria-label="Pilih penyakit">

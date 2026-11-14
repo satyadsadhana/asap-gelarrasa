@@ -61,7 +61,8 @@ export default function Q3Pemicu() {
       value: [r.traffic_intensity_per_h, r.pm25], code: r.code, kel: r.kelompok, jarak: r.distance_to_road_m,
       symbolSize: Math.min(34, 8 + 900 / Math.max(r.distance_to_road_m, 20)),
       itemStyle: { color: filt(r.code) ? kawasanCol(r.kelompok) : MUTED, opacity: 0.85, borderColor: pick(r.code) ?? "#fff", borderWidth: pick(r.code) ? 3 : 1 },
-    })) }],
+      label: { show: true, position: "inside", formatter: fmt(r.pm25, 0), fontSize: 9, fontWeight: 700, color: "#fff", textBorderColor: "rgba(0,0,0,.25)", textBorderWidth: 2 },
+    })), labelLayout: { hideOverlap: true } }],
   };
 
   const rd = rose.data[rs];

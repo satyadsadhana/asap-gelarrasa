@@ -192,9 +192,12 @@ export const TIPE_COL: Record<string, string> = {
 export const kawasanCol = (k: string) => (k === "Gambut" ? C.gambut : C.other);
 
 /** Stasiun Pilihan: tiga warna slot yang tidak dipakai data lain, plus simbol. */
-export const PICK_COL = PAL.pick;
-export const PICK_SYMBOL = ["circle", "diamond", "triangle"] as const;
-export const PICK_GLYPH = ["●", "◆", "▲"];
+/** Batas jumlah Stasiun Pilihan. */
+export const MAKS_PILIH = 5;
+// slot 4-5: biru dan kuning tua, tidak dipakai data lain
+export const PICK_COL = [...PAL.pick, "#2563eb", "#a16207"];
+export const PICK_SYMBOL = ["circle", "diamond", "triangle", "rect", "path://M50 0L93 25L93 75L50 100L7 75L7 25Z"] as const;
+export const PICK_GLYPH = ["●", "◆", "▲", "■", "⬢"];
 export const MUTED = C.na;
 export const INK = C.ink;
 export const INK_SOFT = C.inkSoft;

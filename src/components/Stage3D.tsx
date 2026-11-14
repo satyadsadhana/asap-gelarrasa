@@ -193,10 +193,9 @@ export default function Stage3D({ values, view = "nasional", visible = ALL, heig
       background: true, getBackgroundColor: [10, 24, 34, 200], backgroundPadding: [6, 3],
       characterSet: "auto",
       // SDF: atlas biasa deck.gl 9.3 memotong huruf yang menjorok ke kiri (mis. "j" pada Banjarbaru)
-      fontSettings: { sdf: true, fontSize: 64, buffer: 6, radius: 12 },
+      fontSettings: { sdf: true, fontSize: 64, buffer: 14, radius: 12 },
       billboard: true, getTextAnchor: (d) => arah?.[d.s.code]?.a ?? "middle", getAlignmentBaseline: "bottom",
       getPixelOffset: (d) => [0, arah?.[d.s.code]?.dy ?? 0],
-      transitions: { getPosition: rise }, // label naik-turun bersama puncak tiang
       updateTriggers: { getPosition: [grow, values, cap], getTextAnchor: [JSON.stringify(arah ?? {})], getPixelOffset: [JSON.stringify(arah ?? {})] },
       // label selalu digambar di atas tiang lain supaya tidak terpotong
       parameters: { depthCompare: "always", depthWriteEnabled: false },

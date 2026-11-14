@@ -1,7 +1,7 @@
 import { useData } from "../lib/data";
 import { fmt } from "../lib/format";
 import { useApp } from "../lib/state";
-import { ISPU_COL, ISPU_LAB, ISPU_ON } from "../lib/theme";
+import { ISPU_COL, ISPU_LAB } from "../lib/theme";
 
 type Log = Record<string, string | number | boolean | null> & { code: string };
 
@@ -42,7 +42,7 @@ export default function Tentang() {
           <h2>Kategori ISPU (PM2.5 24 jam)</h2>
           <table className="tbl" style={{ marginTop: 8 }}><tbody>
             {[["0–15,5"], ["15,6–55,4"], ["55,5–150,4"], ["150,5–250,4"], ["> 250,4"]].map(([r], i) => (
-              <tr key={i}><td><span className="pill" style={{ background: ISPU_COL[i], color: ISPU_ON[i] }}>{ISPU_LAB[i]}</span></td><td className="num">{r} µg/m³</td></tr>
+              <tr key={i}><td><span className="ispu-tag" style={{ "--c": ISPU_COL[i] } as React.CSSProperties}><i />{ISPU_LAB[i]}</span></td><td className="num">{r} µg/m³</td></tr>
             ))}
           </tbody></table>
           <p className="note">IKU = 100 − (50/0,9)·(I_EU − 0,1); I_EU = (NO₂/40 + SO₂/20)/2.</p>

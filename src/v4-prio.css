@@ -80,3 +80,17 @@
   .f-res { grid-column: 2 / -1; grid-row: 3; }
 }
 @media (prefers-reduced-motion: reduce) { .alok-rank li { opacity: 1; transform: none; transition: none; } }
+
+/* Revisi 14 Nov: fitur Alokasi diberi latar sendiri (lebih kontras) yang memudar ke atas dan bawah
+   supaya tetap menyatu dengan halaman Simulasi. */
+.alok { position: relative; isolation: isolate; margin: 40px -24px 0; padding: 46px 24px 40px; }
+.alok::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 28px;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(11, 85, 99, .12) 1px, transparent 1.4px) 0 0 / 14px 14px,
+    radial-gradient(120% 70% at 85% 0%, rgba(46, 196, 182, .10), transparent 60%),
+    linear-gradient(180deg, #d3e2e6, #c9dade);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5); }
+@media (max-width: 700px) { .alok { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; } }
+.alok .sec-head p.alok-ikut { margin-top: 6px; font-size: var(--t-xs); color: #8a3b12; gap: 10px; }

@@ -34,17 +34,19 @@ export default function Q1Kondisi() {
     return {
       tooltip: { formatter: (p: any) => p.data?.s ? `<b>${byCode[p.data.s.code].nama}</b> (${p.data.s.code})<br/>${p.data.s.tipe}<br/>Rata-rata: <b>${fmt(p.value[0])}</b> ${UG}<br/>Persentil 95: <b>${fmt(p.value[1])}</b> ${UG}` : "" },
       legend: { bottom: 0, data: tipes, itemGap: 10, textStyle: { fontSize: 11 } },
-      grid: { left: 10, right: 30, top: 20, bottom: 74 },
+      grid: { left: 10, right: 60, top: 20, bottom: 74 },
       xAxis: { type: "log", name: `Rata-rata PM2.5 harian (${UG}) → beban kronis`, nameLocation: "middle", nameGap: 28, min: 5, max: 200 },
       yAxis: { type: "log", name: "Persentil 95 → keparahan episode", nameLocation: "middle", nameGap: 40, min: 10, max: 1000 },
       series: tipes.map((t) => ({
-        name: t, type: "scatter", itemStyle: { color: TIPE_COL[t] },
+        name: t, type: "scatter", itemStyle: { color: TIPE_COL[t] }, labelLayout: { hideOverlap: true },
         data: d[0].filter((s) => s.tipe === t).map((s) => {
           const ring = pick(s.code), on = filt(s.code);
           return {
             value: [s.rata2_pm25, s.p95_pm25], s, symbolSize: ring ? 18 : 12, symbol: sym(s.code) ?? "circle",
             itemStyle: { color: on ? TIPE_COL[t] : MUTED, borderColor: ring ?? "#fff", borderWidth: ring ? 3 : 1, opacity: on ? 1 : 0.4 },
-            label: { show: !!ring || s.code === "SM2-01", formatter: byCode[s.code].nama, position: "right", fontSize: 12, fontWeight: 700, color: C.ink, textBorderColor: "#fff", textBorderWidth: 3 },
+            label: { show: true, position: "right", distance: 4, textBorderColor: "#fff", textBorderWidth: 3,
+              formatter: `${ring || s.code === "SM2-01" ? `{n|${byCode[s.code].nama}} ` : ""}{v|${fmt(s.rata2_pm25, 0)} · ${fmt(s.p95_pm25, 0)}}`,
+              rich: { n: { fontSize: 12, fontWeight: 700, color: C.ink }, v: { fontSize: 9.5, color: C.inkSoft } } },
           };
         }),
         markLine: t === tipes[0] ? {
@@ -84,19 +86,22 @@ export default function Q1Kondisi() {
   const iku25 = iku.data.filter((r) => r.tahun === 2025);
   const ikuOpt: EChartsOption = {
     tooltip: { formatter: (p: any) => `<b>${byCode[p.data.code].nama}</b><br/>IKU ${fmt(p.value[0])} (${p.data.kat})<br/>PM2.5 ${fmt(p.value[1])} ${UG}` },
-    grid: { left: 8, right: 14, top: 14, bottom: 30 },
+    // label area merah ditaruh sebagai judul kecil di atas plot supaya tidak menimpa titik
+    title: { text: '▪ IKU "Baik", tetapi PM2.5 > 35', right: 10, top: 0, textStyle: { fontSize: 11.5, fontWeight: 700, color: C.alert } },
+    grid: { left: 8, right: 14, top: 34, bottom: 30, containLabel: true },
     xAxis: { type: "value", name: "Nilai IKU 2025 (dari NO₂ & SO₂) →  makin baik", nameLocation: "middle", nameGap: 24, min: 0, max: 100 },
-    yAxis: { type: "value", name: `PM2.5 2025 (${UG})` },
+    yAxis: { type: "value", name: `PM2.5 2025 (${UG})`, nameTextStyle: { align: "left" } },
     series: [{
-      type: "scatter", symbolSize: 13,
+      type: "scatter", symbolSize: 13, labelLayout: { hideOverlap: true },
       data: iku25.map((r) => {
         const blind = iku.buta_asap_2025.includes(r.code);
         return { value: [r.IKU, r.pm25], code: r.code, kat: r.kategori_IKU, symbol: sym(r.code) ?? "circle",
           itemStyle: { color: !filt(r.code) ? MUTED : blind ? C.alert : C.other, borderColor: pick(r.code) ?? "#fff", borderWidth: pick(r.code) ? 3 : 1.5 },
-          label: { show: blind && r.pm25 > 60, formatter: byCode[r.code].nama, position: "left", fontSize: 11, fontWeight: 700, color: C.ink, textBorderColor: "#fff", textBorderWidth: 3 } };
+          label: { show: true, formatter: blind && r.pm25 > 60 ? `{n|${byCode[r.code].nama}} {v|${fmt(r.pm25, 0)}}` : `{v|${fmt(r.pm25, 0)}}`, position: blind && r.pm25 > 60 ? "left" : "right", textBorderColor: "#fff", textBorderWidth: 3,
+            rich: { n: { fontSize: 11, fontWeight: 700, color: C.ink }, v: { fontSize: 9.5, color: C.inkSoft } } } };
       }),
       markLine: { silent: true, symbol: "none", lineStyle: { type: "dashed", color: C.inkSoft }, label: { formatter: "35 (WHO IT-1)", position: "insideStartTop" }, data: [{ yAxis: 35 }] },
-      markArea: { silent: true, itemStyle: { color: "rgba(180,35,24,0.06)" }, label: { show: true, formatter: 'IKU "Baik", tetapi PM2.5 > 35', position: "insideTopLeft", color: C.alert, fontWeight: 700, fontSize: 12 }, data: [[{ xAxis: 70, yAxis: 35 }, { xAxis: 100, yAxis: 400 }]] },
+      markArea: { silent: true, itemStyle: { color: "rgba(180,35,24,0.06)" }, label: { show: false }, data: [[{ xAxis: 70, yAxis: 35 }, { xAxis: 100, yAxis: "max" }]] },
     }],
   };
 
@@ -122,7 +127,7 @@ export default function Q1Kondisi() {
 
   // Titik per pulau: satu baris per pulau, titik digeser naik-turun sedikit supaya tidak menumpuk.
   const rows = PULAU_URUT.filter((p) => rank.some((r) => byCode[r.code].pulau === p));
-  const stripData = rows.flatMap((p, yi) => rank.filter((r) => byCode[r.code].pulau === p).map((r, k) => ({ r, y: yi + (k % 3 === 0 ? 0 : k % 3 === 1 ? 0.22 : -0.22) })));
+  const stripData = rows.flatMap((p, yi) => rank.filter((r) => byCode[r.code].pulau === p).map((r, k) => ({ r, y: yi + (k % 3 === 0 ? 0 : k % 3 === 1 ? 0.3 : -0.3) })));
   const extremes = new Set(rows.map((p) => rank.filter((r) => byCode[r.code].pulau === p).slice(-1)[0]?.code));
   const pulauMean = rows.map((p) => { const v = rank.filter((r) => byCode[r.code].pulau === p).map((r) => r.rata2); return v.reduce((a, b) => a + b, 0) / v.length; });
   const stripOpt: EChartsOption = {
@@ -135,7 +140,7 @@ export default function Q1Kondisi() {
       { type: "scatter", name: "Stasiun", animationDelay: (i: number) => i * 45, animationDuration: 700,
         data: stripData.map(({ r, y }) => {
           const on = filt(r.code), ring = pick(r.code), g = byCode[r.code].gambut;
-          return { value: [r.rata2, y], code: r.code, symbol: sym(r.code) ?? "circle", symbolSize: ring ? 20 : 15,
+          return { value: [r.rata2, y], code: r.code, symbol: sym(r.code) ?? "circle", symbolSize: ring ? 24 : 20,
             itemStyle: { color: !on ? MUTED : g ? C.gambut : C.focus, borderColor: ring ?? "#fff", borderWidth: ring ? 3 : 2, shadowBlur: 6, shadowColor: "rgba(0,0,0,.12)" },
             label: { show: extremes.has(r.code) || !!ring, formatter: byCode[r.code].nama, position: "top", distance: 6, fontSize: 12, fontWeight: 700, color: C.ink, textBorderColor: "#fff", textBorderWidth: 3 } };
         }),
@@ -145,6 +150,9 @@ export default function Q1Kondisi() {
           ] },
         markArea: { silent: true, itemStyle: { color: "rgba(180,35,24,0.045)" }, data: [[{ xAxis: refLine }, { xAxis: "max" }]] },
       },
+      // angka kecil di tengah titik; yang bertabrakan disembunyikan (nilai tetap ada di tooltip)
+      { type: "scatter", name: "Nilai", silent: true, z: 3, symbolSize: 20, itemStyle: { color: "transparent" }, labelLayout: { hideOverlap: true }, animationDelay: (i: number) => i * 45 + 300,
+        data: stripData.map(({ r, y }) => ({ value: [r.rata2, y], label: { show: true, position: "inside", formatter: fmt(r.rata2, 0), fontSize: 9, fontWeight: 700, color: "#fff" } })) },
       { type: "scatter", name: "Rata-rata pulau", symbol: "rect", symbolSize: [3, 26], silent: true, z: 1,
         data: rows.map((_, yi) => [pulauMean[yi], yi]), itemStyle: { color: C.ink, opacity: 0.55 },
         label: { show: true, position: "bottom", distance: 4, formatter: (p: any) => `rata-rata ${fmt(p.value[0], 0)}`, fontSize: 11, color: C.inkSoft } },
@@ -228,7 +236,7 @@ export default function Q1Kondisi() {
         <Story tone="alert" title="Paling Kotor Tergantung Cara Mengukurnya"
           big={byCode[juara[1].top[0].code].nama} bigNote={`satu-satunya stasiun dengan ${fmt(juara[1].top[0].pct_hari_gt55, 0)}% hari di atas 55 ${UG}`}
           chart={<div className="tbl-wrap"><table className="tbl dirty"><thead><tr><th>Ukuran</th><th>Peringkat 1</th><th>2</th><th>3</th></tr></thead>
-            <tbody>{juara.map((m) => <tr key={m.k}><td><b>{m.k}</b></td>{m.top.map((s) => <td key={s.code}><button className="link-btn" onClick={() => openProfil(s.code)}>{nama(s.code)}</button><br /><small>{fmt(m.v(s), 1)} {m.u}</small></td>)}</tr>)}</tbody></table></div>}>
+            <tbody>{juara.map((m) => <tr key={m.k}><td><b>{m.k}</b></td>{m.top.map((s) => <td key={s.code}><button className="go-link" onClick={() => openProfil(s.code)} title="Buka profil stasiun"><span>{nama(s.code)}</span><i aria-hidden>↗</i></button><br /><small>{fmt(m.v(s), 1)} {m.u}</small></td>)}</tr>)}</tbody></table></div>}>
           <p>Rata-rata tertinggi ada di <b>{nama(juara[0].top[0].code)}</b>; di antara stasiun yang datanya andal, tertinggi {byCode[andalTeratas.code].nama} ({fmt(andalTeratas.rata2_pm25, 1)} {UG}). Puncak satu hari tertinggi: <b>{byCode[puncakHari.code].nama}</b>, {fmt(hariTerburuk[puncakHari.code].v, 0)} {UG} pada {fmtDate(hariTerburuk[puncakHari.code].tgl)}.</p>
           <p>Ada dua jenis udara kotor. <b>Kronis</b>: Marunda tidak pernah sehat, tetapi juga tidak pernah ekstrem. <b>Episodik</b>: stasiun Kalimantan biasa saja sebagian besar tahun, lalu meledak saat musim asap.</p>
         </Story>
