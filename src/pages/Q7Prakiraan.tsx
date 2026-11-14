@@ -550,17 +550,17 @@ function CaraKerja({ vf, sb }: { vf: Verif; sb: Verif["struktur_bulanan"] }) {
   const b = vf.setelan.terbaik;
   return (
     <div className="pk-cara">
-      <div><b>Data</b><span>PM2.5 harian dari panel yang sama dengan seluruh dashboard (aturan pembersihan notebook), 1 Jan 2024 – {fmtDate(vf.terbit)}. Stasiun dengan kurang dari 365 hari sah tidak diramal.</span></div>
-      <div><b>Yang Ditebak</b><span>Perubahan dari hari ini (skala log), bukan nilainya, karena puncak 2026 lebih tinggi dari apa pun di data latih.</span></div>
-      <div><b>Petunjuk yang Dipakai</b><span>{vf.fitur.length} ukuran bentuk pergerakan: selisih hari ini dengan 1–7, 14, dan 30 hari lalu, dengan rata-rata 3, 7, dan 30 hari, serta naik-turun 7 hari.</span></div>
-      <div><b>Yang Diuji dan Ditolak</b><span>Cuaca (kelembapan, angin, suhu, hari kering), CO, rasio PM2.5/PM10, pola jam malam, stasiun tetangga searah angin, musim, dan tingkat absolut. Tidak ada yang menambah akurasi 2026; fitur musim terbaik di validasi tetapi terburuk di uji (menghafal).</span></div>
-      <div><b>Penyetelan</b><span>{vf.setelan.percobaan} percobaan Optuna di 2025. Terpilih: {String(b.objective)}, {b.n_estimators} pohon, {b.num_leaves} daun.</span></div>
-      <div><b>Rentang dan Peluang</b><span>Rentang 80% dari sebaran galat 2025 per stasiun, musim, dan horizon. Peluang &gt; 55 = gabungan model dan pola musiman per stasiun-bulan, bobotnya dipilih di 2025.</span></div>
-      <div><b>Lapis Transisi Bulan</b><span>Saat tanggal target pindah bulan, prakiraan = nilai hari ini + selisih log level bulan target dan bulan asal tahun lalu di stasiun itu. Di uji 2026 galat log turun sekitar 65% pada lintas bulan (validasi 2025: sekitar 58–61%). Metode ini memanfaatkan pola tangga bulanan di dataset ini; pada sensor yang tidak berpola begitu, lapis ini tidak banyak membantu.</span></div>
-      <div><b>Linimasa Musim</b><span>Periode PM2.5 di atas 55 per lokasi per tahun (hari berurutan, celah sampai 10 hari digabung). Sisa musim 2026 = sampai tanggal akhir musim 2025 di lokasi itu (pola kalender dari 2 tahun, bukan ramalan model); lokasi yang di atas 55 sepanjang tahun tidak ditampilkan; akhir musim sama pada 2024 dan 2025 di hampir semua lokasi.</span></div><div><b>Rekam Jejak</b><span>Garis teal di grafik lokasi = prakiraan besok yang dibuat sehari sebelumnya, diambil dari arsip uji berjalan 2026.</span></div>
-      <div><b>Kasus Napas</b><span>Rata-rata kasus 7 hari terakhir × (PM2.5 prakiraan ÷ PM2.5 7 hari terakhir)^(b ÷ ln 2), b per RS dari model dampak halaman Simulasi. Diuji balik pada arsip prakiraan 2026.</span></div>
-      <div><b>Struktur Dataset</b><span>Tingkat PM2.5 di dataset berganti pada tanggal 1 tiap bulan: {sb.awal_lonjakan_tgl1} dari {sb.awal_lonjakan} awal lonjakan dan {sb.lonjakan_besar_tgl1} dari {sb.lonjakan_besar} lonjakan besar jatuh pada tanggal 1. Sebelumnya struktur ini sengaja tidak dimanfaatkan; sekarang dipakai secara terbuka di lapis transisi, dan bergantung pada dataset ini.</span></div>
-      <div><b>Batasan</b><span>Tanpa titik api dan curah hujan, model tidak bisa melihat kebakaran baru sebelum asapnya terukur. Angka harian di atas 7 hari tidak ditampilkan.</span></div>
+      <div><b>Data</b><span>PM2.5 harian 1 Jan 2024 – {fmtDate(vf.terbit)}, sama dengan seluruh dashboard. Stasiun dengan data sah kurang dari 365 hari tidak diramal.</span></div>
+      <div><b>Yang Ditebak</b><span>Seberapa besar PM2.5 berubah dari hari ini, bukan nilainya langsung. Alasannya, puncak 2026 lebih tinggi dari semua data latih.</span></div>
+      <div><b>Petunjuk yang Dipakai</b><span>{vf.fitur.length} ukuran pergerakan PM2.5: selisih dengan hari-hari sebelumnya, rata-rata 3/7/30 hari, dan naik-turun sepekan.</span></div>
+      <div><b>Yang Diuji dan Ditolak</b><span>Cuaca, CO, rasio PM2.5/PM10, pola jam, stasiun tetangga, dan musim sudah dicoba. Tidak ada yang membuat prakiraan 2026 lebih tepat.</span></div>
+      <div><b>Penyetelan</b><span>{vf.setelan.percobaan} percobaan Optuna di data 2025. Terpilih: {String(b.objective)}, {b.n_estimators} pohon, {b.num_leaves} daun.</span></div>
+      <div><b>Rentang dan Peluang</b><span>Rentang 80% diambil dari galat 2025. Peluang &gt; 55 menggabungkan model dengan pola musim tiap stasiun.</span></div>
+      <div><b>Lapis Transisi Bulan</b><span>Saat prakiraan melewati pergantian bulan, perubahan level bulan itu tahun lalu ikut dipakai. Galat lintas bulan turun sekitar 65% di uji 2026.</span></div>
+      <div><b>Linimasa Musim</b><span>Musim = periode PM2.5 di atas 55. Sisa musim 2026 diperkirakan dari tanggal akhir musim 2025 di lokasi yang sama, bukan dari model.</span></div><div><b>Rekam Jejak</b><span>Garis teal di grafik lokasi = prakiraan besok yang dibuat sehari sebelumnya, dari arsip uji 2026.</span></div>
+      <div><b>Kasus Napas</b><span>Kasus 7 hari terakhir disesuaikan dengan naik-turunnya PM2.5 prakiraan, memakai rumus dampak dari halaman Simulasi.</span></div>
+      <div><b>Struktur Dataset</b><span>Level PM2.5 di dataset berganti tiap tanggal 1: {sb.awal_lonjakan_tgl1} dari {sb.awal_lonjakan} awal lonjakan jatuh di tanggal itu. Pola ini dipakai terbuka di lapis transisi.</span></div>
+      <div><b>Batasan</b><span>Tanpa data titik api dan hujan, kebakaran baru belum terlihat sebelum asapnya terukur. Prakiraan hanya sampai 7 hari.</span></div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import "./v4-sim.css";
 import "./v4-prio.css";
 import "./v4-prakiraan.css";
 import "./v4-tour.css";
+import "./v4-ambient.css";
 import App from "./App";
 import { applyChrome } from "./lib/theme";
 

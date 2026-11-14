@@ -1,0 +1,100 @@
+/* =====================================================================
+   Latar hidup + siluet warna kartu (14 Nov).
+   Hanya tampilan: tidak mengubah tata letak, teks, atau interaksi.
+   ===================================================================== */
+
+/* ---------- latar utama: warna kalem + kabut asap yang bergerak ---------- */
+/* warna dasar di <html>; <body> transparan supaya lapisan animasi di belakang terlihat */
+html:root { background: linear-gradient(160deg, #eef0f2 0%, #f3efe9 50%, #edeff3 100%) fixed; }
+body { background: transparent !important; }
+html::before,
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+/* 1) awan warna kalem (pasir, biru abu, mawar pudar, sage) yang melayang pelan */
+html::before {
+  inset: -25vmax;
+  background:
+    radial-gradient(34vmax 28vmax at 22% 25%, rgba(190, 168, 135, .45), transparent 70%),
+    radial-gradient(30vmax 26vmax at 80% 28%, rgba(135, 152, 182, .45), transparent 70%),
+    radial-gradient(36vmax 30vmax at 62% 82%, rgba(196, 148, 148, .34), transparent 70%),
+    radial-gradient(28vmax 22vmax at 14% 78%, rgba(148, 162, 142, .36), transparent 70%);
+  filter: blur(30px);
+  animation: amb-drift 18s ease-in-out infinite alternate;
+}
+/* 2) kabut asap: dua lapis gumpalan yang hanyut lebih cepat, arah berlawanan */
+body::before {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1200'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.0044444' numOctaves='4' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.30  0 0 0 0 0.33  0 0 0 0 0.40  0 0 0 2.2 -0.95'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1200'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.0033333' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 2 -0.95'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  inset: -20vmax;
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% 100%;
+  opacity: .9;
+  animation: amb-kabut 12s ease-in-out infinite alternate;
+}
+/* 3) butiran halus diam, supaya permukaan tidak licin */
+body::after {
+  inset: 0;
+  opacity: .5;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.2  0 0 0 0 0.22  0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+@keyframes amb-drift {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  33%  { transform: translate3d(7vmax, -5vmax, 0) rotate(8deg) scale(1.08); }
+  66%  { transform: translate3d(-5vmax, 4vmax, 0) rotate(-6deg) scale(1.04); }
+  100% { transform: translate3d(4vmax, 6vmax, 0) rotate(4deg) scale(1.1); }
+}
+@keyframes amb-kabut {
+  0%   { transform: translate3d(-8vmax, 4vmax, 0) scale(1); }
+  50%  { transform: translate3d(6vmax, -3vmax, 0) scale(1.08); }
+  100% { transform: translate3d(10vmax, 5vmax, 0) scale(1.03); }
+}
+
+/* ---------- kartu putih: siluet warna tipis di pojok + bayangan berwarna ---------- */
+/* warna bergiliran per kartu; kartu di pita Prakiraan & panel uji Prakiraan tidak diubah */
+.main-slot > *:nth-child(4n+1), .stories > *:nth-child(4n+1) { --tint: 46, 196, 182; }   /* toska */
+.main-slot > *:nth-child(4n+2), .stories > *:nth-child(4n+2) { --tint: 232, 140, 90; }   /* peach */
+.main-slot > *:nth-child(4n+3), .stories > *:nth-child(4n+3) { --tint: 110, 120, 210; }  /* lavender */
+.main-slot > *:nth-child(4n+4), .stories > *:nth-child(4n+4) { --tint: 214, 96, 130; }   /* mawar */
+
+.card:not(.pk-band .card),
+.story-row:not(:has(.pk-angka)) {
+  --tint: 46, 196, 182;
+  background:
+    radial-gradient(420px 260px at 100% 0%, rgba(var(--tint), .14), transparent 70%),
+    radial-gradient(360px 220px at 0% 100%, rgba(var(--tint), .07), transparent 70%),
+    #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    0 0 0 1px rgba(var(--tint), .10),
+    0 1px 2px rgba(13, 26, 34, .04),
+    0 16px 34px -18px rgba(var(--tint), .35);
+}
+/* .card yang langsung anak main-slot/stories mewarisi --tint dari aturan nth-child di atas */
+.main-slot > .card:not(.pk-band .card):nth-child(4n+1), .stories > .story-row:nth-child(4n+1) { --tint: 46, 196, 182; }
+.main-slot > .card:not(.pk-band .card):nth-child(4n+2), .stories > .story-row:nth-child(4n+2) { --tint: 232, 140, 90; }
+.main-slot > .card:not(.pk-band .card):nth-child(4n+3), .stories > .story-row:nth-child(4n+3) { --tint: 110, 120, 210; }
+.main-slot > .card:not(.pk-band .card):nth-child(4n+4), .stories > .story-row:nth-child(4n+4) { --tint: 214, 96, 130; }
+/* kartu yang bersarang (grid dua kolom dsb.) ikut warna induknya */
+.main-slot > :not(.card) .card:not(.pk-band .card) { --tint: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  html::before, body::before, body::after { animation: none; }
+}
+
+/* kartu fakta putih (kartu gelap selang-seling tetap gelap) */
+.fact:nth-child(odd) {
+  --tint: 46, 196, 182;
+  background:
+    radial-gradient(260px 180px at 100% 0%, rgba(var(--tint), .16), transparent 70%),
+    #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 0 0 1px rgba(var(--tint), .12), 0 16px 30px -18px rgba(var(--tint), .4);
+}
+.fact:nth-child(4n+3) { --tint: 232, 140, 90; }
+.fact:nth-child(4n+5) { --tint: 110, 120, 210; }
+.fact:nth-child(even) { box-shadow: 0 16px 30px -18px rgba(11, 29, 42, .55); }
