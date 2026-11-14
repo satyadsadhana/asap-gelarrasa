@@ -274,7 +274,8 @@ export function Story({ title, big, bigNote, children, chart, right, flip, tone 
     <Reveal as="section" className={`story-row${flip ? " flip" : ""} t-${tone}`}>
       <div className="story-text">
         <h2>{title}</h2>
-        {big && <div className="story-big">{big}</div>}
+        {/* angka panjang (mis. "Minggu ke-31") turun satu tingkat supaya tidak patah di tanda hubung */}
+        {big && <div className={`story-big${typeof big === "string" && big.length > 8 ? " long" : ""}`}>{big}</div>}
         {bigNote && <p className="story-bignote">{bigNote}</p>}
         {children && <div className="story-body">{children}</div>}
         {right && <div className="story-ctrl">{right}</div>}

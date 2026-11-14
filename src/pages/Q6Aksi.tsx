@@ -118,7 +118,7 @@ export default function Q6Aksi() {
     series = {
       tooltip: { trigger: "axis", valueFormatter: (v: any) => `${fmt(v)} ${UG}` },
       legend: { bottom: 0 }, grid: { left: 8, right: 10, top: 10, bottom: 34 },
-      xAxis: { type: "category", data: idx.map((i) => fmtDate(dateAt(i))), axisLabel: { fontSize: 10 } }, yAxis: { type: "value", name: UG },
+      xAxis: { type: "category", data: idx.map((i) => fmtDate(dateAt(i))), axisLabel: { fontSize: 11 } }, yAxis: { type: "value", name: UG },
       series: [
         { name: "PM2.5 aktual", type: "line", symbol: "none", data: idx.map((i) => r.pm25[i]), itemStyle: { color: C.other }, areaStyle: { opacity: 0.18 } },
         { name: "PM2.5 skenario", type: "line", symbol: "none", data: idx.map((i) => (r.pm25[i] == null ? null : apply(sk, Math.max(1, r.pm25[i]!)))), itemStyle: { color: C.focus }, lineStyle: { width: 2 } },

@@ -31,7 +31,7 @@ export default function Q2Waktu() {
 
   const seasonal: EChartsOption = {
     tooltip: { trigger: "axis", valueFormatter: (v: any) => (v == null ? "–" : `${fmt(v)} ${UG}`) },
-    legend: { bottom: 0, textStyle: { fontSize: 11.5 } }, grid: { left: 8, right: 16, top: 30, bottom: 46 },
+    legend: { bottom: 0, textStyle: { fontSize: 12 } }, grid: { left: 8, right: 16, top: 30, bottom: 46 },
     xAxis: { type: "category", data: BULAN, axisLabel: { fontSize: 12, fontWeight: 600 } }, yAxis: { type: "value", name: UG },
     series: [
       ...["2024", "2025", "2026"].map((y, k) => ({
@@ -54,7 +54,7 @@ export default function Q2Waktu() {
     tooltip: { formatter: (p: any) => `${cal.tahun[p.value[1]]}, minggu ke-${cal.minggu[p.value[0]]}<br/><b>${p.value[2] == null ? "belum ada data" : `${fmt(p.value[2], 0)}%`}</b> hari-stasiun gambut tidak sehat` },
     grid: { left: 8, right: 8, top: 10, bottom: 62 },
     xAxis: { type: "category", data: cal.minggu.map(String), splitArea: { show: false }, axisTick: { show: false }, axisLine: { show: false },
-      axisLabel: { interval: 3, fontSize: 10.5 }, name: "minggu ke-", nameLocation: "middle", nameGap: 22 },
+      axisLabel: { interval: 3, fontSize: 11 }, name: "minggu ke-", nameLocation: "middle", nameGap: 22 },
     yAxis: { type: "category", data: cal.tahun.map(String), inverse: true, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { fontSize: 13, fontWeight: 700, color: C.ink } },
     visualMap: { min: 0, max: 100, calculable: false, orient: "horizontal", left: "center", bottom: 0, itemWidth: 12, itemHeight: 180, text: ["100% tidak sehat", "0%"], textStyle: { fontSize: 11 },
       inRange: { color: ["#eef3f4", RAMP[1], RAMP[2], RAMP[3], RAMP[4], RAMP[5]] } },
@@ -71,7 +71,7 @@ export default function Q2Waktu() {
     legend: { bottom: 0, textStyle: { fontSize: 11 }, itemWidth: 12 },
     polar: { radius: ["12%", "72%"], center: ["50%", "47%"] },
     angleAxis: { type: "category", data: [...hours, "24"], startAngle: 90, clockwise: true, boundaryGap: false,
-      axisLabel: { fontSize: 10.5, color: C.inkSoft, interval: 2, formatter: (v: string) => (v === "24" ? "" : v) }, axisLine: { lineStyle: { color: "#d7e1e4" } }, splitLine: { show: true, lineStyle: { color: "#eef3f4" } } },
+      axisLabel: { fontSize: 11, color: C.inkSoft, interval: 2, formatter: (v: string) => (v === "24" ? "" : v) }, axisLine: { lineStyle: { color: "#d7e1e4" } }, splitLine: { show: true, lineStyle: { color: "#eef3f4" } } },
     radiusAxis: { min: pol === "pm25" ? 0.8 : 0.5, max: pol === "pm25" ? 1.4 : 2.4, axisLabel: { show: false }, splitLine: { lineStyle: { color: "#e3eaec" } }, axisLine: { show: false } },
     series: pol === "pm25"
       ? kel.map((k) => {

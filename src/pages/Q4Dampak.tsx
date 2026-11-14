@@ -82,7 +82,7 @@ export default function Q4Dampak() {
   const lagOpt: EChartsOption = {
     tooltip: { trigger: "axis", formatter: (p: any) => { const r = lagRows[p[0].dataIndex]; return `${r.x}<br/>RR <b>${fmt(r.rr, 3)}</b> (${fmt(r.lo, 2)}–${fmt(r.hi, 2)})`; } },
     grid: { left: 8, right: 10, top: 14, bottom: 30 },
-    xAxis: { type: "category", data: lagRows.map((r) => r.x), axisLabel: { fontSize: 10, interval: 0, rotate: lagRows.length > 7 ? 30 : 0 } },
+    xAxis: { type: "category", data: lagRows.map((r) => r.x), axisLabel: { fontSize: 11, interval: 0, rotate: lagRows.length > 7 ? 30 : 0 } },
     yAxis: { type: "value", name: "RR per lipat dua", min: (v: any) => Math.min(0.9, Math.floor(v.min * 20) / 20) },
     series: [
       { type: "bar", data: lagRows.map((r) => ({ value: r.rr, itemStyle: { color: r.plasebo ? C.otherSoft : C.focus } })),
@@ -99,7 +99,7 @@ export default function Q4Dampak() {
   const ageOpt: EChartsOption = {
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
     grid: [{ left: 8, right: "55%", top: 26, bottom: 10, containLabel: true }, { left: "55%", right: 30, top: 26, bottom: 10, containLabel: true }],
-    title: [{ text: "Kenaikan risiko per lipat dua", left: "4%", top: 0, textStyle: { fontSize: 11.5, fontWeight: 600 } }, { text: "Total kasus 2024–2026", left: "56%", top: 0, textStyle: { fontSize: 11.5, fontWeight: 600 } }],
+    title: [{ text: "Kenaikan risiko per lipat dua", left: "4%", top: 0, textStyle: { fontSize: 12, fontWeight: 600 } }, { text: "Total kasus 2024–2026", left: "56%", top: 0, textStyle: { fontSize: 12, fontWeight: 600 } }],
     xAxis: [{ type: "value", gridIndex: 0, show: false, max: 70 }, { type: "value", gridIndex: 1, show: false }],
     yAxis: [{ type: "category", gridIndex: 0, data: ["Balita", "Lansia"], inverse: true }, { type: "category", gridIndex: 1, data: ["Balita", "Lansia"], axisLabel: { show: false }, inverse: true }],
     series: [
@@ -117,7 +117,7 @@ export default function Q4Dampak() {
     grid: [{ left: 8, right: 16, top: 62, height: "32%" }, { left: 8, right: 16, top: "62%", bottom: 40 }],
     xAxis: [
       { type: "category", data: wk.weeks.map(fmtDate), gridIndex: 0, axisLabel: { show: false }, axisTick: { show: false } },
-      { type: "category", data: wk.weeks.map(fmtDate), gridIndex: 1, axisLabel: { fontSize: 10.5 } },
+      { type: "category", data: wk.weeks.map(fmtDate), gridIndex: 1, axisLabel: { fontSize: 11 } },
     ],
     yAxis: [
       { type: "log", min: 5, gridIndex: 0, name: `PM2.5 mingguan (${UG}), skala log`, nameTextStyle: { align: "left" }, nameGap: 10 },
@@ -126,7 +126,7 @@ export default function Q4Dampak() {
     dataZoom: [{ type: "inside", xAxisIndex: [0, 1] }],
     series: [
       ...wk.rows.map((r) => ({ name: byCode[r.c].nama, type: "line" as const, xAxisIndex: 0, yAxisIndex: 0, symbol: "none", data: r.pm, lineStyle: { width: 2 }, itemStyle: { color: PICK_COL[r.slot] },
-        markLine: r.slot === wk.rows[0].slot ? { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "dashed" as const }, label: { formatter: "150 · Sangat Tidak Sehat", position: "insideEndTop" as const, color: C.ink, fontSize: 10.5 }, data: [{ yAxis: 150 }] } : undefined })),
+        markLine: r.slot === wk.rows[0].slot ? { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "dashed" as const }, label: { formatter: "150 · Sangat Tidak Sehat", position: "insideEndTop" as const, color: C.ink, fontSize: 11 }, data: [{ yAxis: 150 }] } : undefined })),
       ...wk.rows.map((r) => ({ name: byCode[r.c].nama, type: "line" as const, xAxisIndex: 1, yAxisIndex: 1, symbol: "none", data: r.y, lineStyle: { width: 2 }, itemStyle: { color: PICK_COL[r.slot] } })),
     ],
   };
@@ -164,7 +164,7 @@ export default function Q4Dampak() {
               const r = rr.gabungan[o];
               const max = 80;
               return (
-                <div key={o} style={{ display: "grid", gridTemplateColumns: "118px 1fr 52px", alignItems: "center", gap: 8, fontSize: 12.5 }}>
+                <div key={o} style={{ display: "grid", gridTemplateColumns: "118px 1fr 52px", alignItems: "center", gap: 8, fontSize: 13 }}>
                   <span>{o}</span>
                   <span style={{ position: "relative", height: 14, background: "var(--surface-2)", borderRadius: 4 }}>
                     <span style={{ position: "absolute", left: `${((r.lo - 1) * 100 / max) * 100}%`, width: `${((r.hi - r.lo) * 100 / max) * 100}%`, top: 6, height: 2, background: C.ink }} />
@@ -188,7 +188,7 @@ export default function Q4Dampak() {
               tooltip: { formatter: (p: any) => `<b>${byCode[p.data.code]?.nama}</b><br/>PM2.5 ${fmt(p.value[0])} ${UG}<br/>${fmt(p.value[1], 2)} kasus napas/hari per 100 TT` },
               grid: { left: 8, right: 14, top: 14, bottom: 30 },
               xAxis: { type: "value", name: `Rata-rata PM2.5 (${UG})`, nameLocation: "middle", nameGap: 24 }, yAxis: { type: "value", name: "kasus napas / 100 TT / hari" },
-              series: [{ type: "scatter", symbolSize: 11, itemStyle: { color: C.focus }, label: { show: true, formatter: (p: any) => byCode[p.data.code]?.nama, position: "right", fontSize: 10 },
+              series: [{ type: "scatter", symbolSize: 11, itemStyle: { color: C.focus }, label: { show: true, formatter: (p: any) => byCode[p.data.code]?.nama, position: "right", fontSize: 11 },
                 data: ecoV.map((r) => ({ value: [r.pm25, r.resp_per100], code: r.code })) }],
             }} />
             <p className="note">RS Tipe A & RS-24–27 dikeluarkan. Ini perbandingan antar wilayah, bukan efek harian.</p>

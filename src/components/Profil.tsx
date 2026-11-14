@@ -38,7 +38,7 @@ export default function Profil() {
       visualMap: { show: false, dimension: 1, pieces: [{ lte: 15.5, color: ISPU_COL[0] }, { gt: 15.5, lte: 55.4, color: ISPU_COL[1] }, { gt: 55.4, lte: 150.4, color: "#d4a900" }, { gt: 150.4, lte: 250.4, color: ISPU_COL[3] }, { gt: 250.4, color: ISPU_COL[4] }] },
       series: [{ type: "line", data: arr, symbol: "none", lineStyle: { width: 1.2 }, connectNulls: false,
         markArea: { silent: true, itemStyle: { color: "rgba(120,120,120,0.16)" }, data: gaps.filter(([a, b]) => a !== b).map(([a, b]) => [{ xAxis: a }, { xAxis: b }]) as any },
-        markLine: { silent: true, symbol: "none", lineStyle: { type: "dashed", color: "#555" }, label: { formatter: "55 baku mutu harian", fontSize: 10, position: "insideEndTop" }, data: [{ yAxis: 55 }] } }],
+        markLine: { silent: true, symbol: "none", lineStyle: { type: "dashed", color: "#555" }, label: { formatter: "55 baku mutu harian", fontSize: 11, position: "insideEndTop" }, data: [{ yAxis: 55 }] } }],
     };
   }, [d, s]);
 
@@ -62,7 +62,7 @@ export default function Profil() {
     }
     rsOpt = {
       tooltip: { trigger: "axis" }, legend: { bottom: 0 }, grid: { left: 8, right: 8, top: 18, bottom: 34 },
-      xAxis: { type: "category", data: wk.map((w) => fmtDate(w.d)), axisLabel: { fontSize: 10 } },
+      xAxis: { type: "category", data: wk.map((w) => fmtDate(w.d)), axisLabel: { fontSize: 11 } },
       yAxis: [{ type: "value", name: UG }, { type: "value", name: "kasus/hari", splitLine: { show: false } }],
       series: [
         { name: "PM2.5 (rata-rata mingguan)", type: "line", symbol: "none", data: wk.map((w) => w.pm), itemStyle: { color: C.other }, areaStyle: { opacity: 0.18 } },
@@ -77,8 +77,8 @@ export default function Profil() {
       <aside className="drawer" data-tour="drawer" role="dialog" aria-label={`Profil stasiun ${s.nama}`}>
         <button className="drawer-close" onClick={() => openProfil(null)} aria-label="Tutup">×</button>
         <div className="q-kicker">{s.code} · {s.pulau}</div>
-        <h2 style={{ fontSize: 24, marginTop: 4 }}>{s.nama}</h2>
-        <p style={{ color: "var(--ink-soft)", fontSize: 13.5 }}>{s.kecamatan}, {s.kota}, {s.provinsi}</p>
+        <h2 style={{ fontSize: 24.0, marginTop: 4 }}>{s.nama}</h2>
+        <p style={{ color: "var(--ink-soft)", fontSize: 13 }}>{s.kecamatan}, {s.kota}, {s.provinsi}</p>
         <div className="chips" style={{ marginTop: 10 }}>
           <span className="pill" style={{ background: kawasanCol(s.kelompok), color: s.gambut ? "#fff" : "#18211c" }}>{s.kelompok}</span>
           {s.tipe && <span className="pill" style={{ background: "#eee" }}>{s.tipe}</span>}

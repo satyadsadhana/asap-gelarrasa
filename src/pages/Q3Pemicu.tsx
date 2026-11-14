@@ -70,7 +70,7 @@ export default function Q3Pemicu() {
     legend: { bottom: 0, textStyle: { fontSize: 11 } },
     polar: { radius: "68%", center: ["50%", "46%"] },
     angleAxis: { type: "category", data: rose.sektor, startAngle: 90 + 22.5, clockwise: true },
-    radiusAxis: { min: 0, max: 1.3, axisLabel: { fontSize: 9 } },
+    radiusAxis: { min: 0, max: 1.3, axisLabel: { fontSize: 11 } },
     series: [
       { name: "PM2.5 relatif", type: "bar", coordinateSystem: "polar", data: rd.map((r) => (r["jam_%"] >= 2 ? r.pm25_rel : null)), itemStyle: { color: C.focus, opacity: 0.85 } },
       { name: "SO₂ relatif", type: "line", coordinateSystem: "polar", data: rd.map((r) => (r["jam_%"] >= 2 ? r.so2_rel : null)), itemStyle: { color: C.other }, lineStyle: { type: "dashed" }, symbolSize: 4 },

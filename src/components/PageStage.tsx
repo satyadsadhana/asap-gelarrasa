@@ -124,14 +124,14 @@ export default function PageStage({ path, cap = null }: { path: string; cap?: nu
         const sm = byCode["SM2-01"];
         return [
           { t: "Makin Pekat Tiap Tahun, Terparah Sep–Okt 2026", view: "kalimantan", values: per(year), years: true, tinggi: `rata-rata ${year}${year === "2026" ? " (s.d. 14 Okt)" : ""}`, labels: ["KTG-01", "KTG-02"], arah: KEMBAR,
-            d: <>Puncak bulanan kawasan gambut: <b>{fmt(pk["2024"], 0)} → {fmt(pk["2025"], 0)} → {fmt(pk["2026"], 0)}</b> {UG}. Bulan terburuk se-jaringan: <b>{w.bulanTerburuk.label}</b> ({w.bulanTerburuk.n} hari-stasiun di atas 150,4). Hari terburuk: {fmtDate(w.puncak.tgl)}, {byCode[w.puncak.code]?.nama} <b>{fmt(w.puncak.v, 0)} {UG}</b>, hari terakhir data.</> },
+            d: <>Puncak bulanan gambut: <b>{fmt(pk["2024"], 0)} → {fmt(pk["2025"], 0)} → {fmt(pk["2026"], 0)}</b> {UG}. Terburuk <b>{w.bulanTerburuk.label}</b> ({w.bulanTerburuk.n} hari-stasiun &gt; 150,4); puncaknya {byCode[w.puncak.code]?.nama} <b>{fmt(w.puncak.v, 0)} {UG}</b> pada {fmtDate(w.puncak.tgl)}.</> },
           { t: "Musim Mulai Akhir Juli", view: "nasional", values: per("2026"), tinggi: "rata-rata 1 Jan–14 Okt 2026", labels: ["KTG-01", "PLB-01", "SM2-01"],
-            d: <>Musim risiko gambut dimulai <b>minggu ke-{mg["2026"]}</b> (2024 dan 2025: minggu ke-{mg["2024"]}) dan memuncak September–Oktober, jadi siaga bisa dijadwalkan sebelum asap datang.
-              {w.sm2024.hanyaSamarinda && sm ? <> Pada 2024 satu-satunya stasiun di atas 150 adalah {sm.nama} (kawasan industri, data grade {sm.grade}): {w.sm2024.n} hari, puncak {fmtDate(w.sm2024.tgl)} ({fmt(w.sm2024.v, 0)} {UG}). Karena datanya lemah, {sm.nama} tidak dipakai sebagai bukti tren asap gambut.</> : null}</> },
+            d: <>Musim risiko gambut mulai <b>minggu ke-{mg["2026"]}</b> (2024–2025: ke-{mg["2024"]}) dan memuncak Sep–Okt, jadi siaga bisa dijadwalkan sebelum asap datang.
+              {w.sm2024.hanyaSamarinda && sm ? <> {sm.nama} ({w.sm2024.n} hari &gt; 150 pada 2024, puncak {fmt(w.sm2024.v, 0)}) tidak dipakai: data grade {sm.grade}.</> : null}</> },
           { t: "Jam Sibuk Ada, Akhir Pekan Tidak", view: "jawa", values: mean, tinggi: "rata-rata 2024–2026", labels: ["JKT-01", "JKT-03"],
-            d: <>Stasiun tepi jalan memuncak <b>07–09 dan 17–19</b>. Akhir pekan praktis sama dengan hari kerja (selisih median di bawah 0,1%), jadi membatasi kendaraan hanya di akhir pekan tidak akan banyak menurunkan rata-rata.</> },
+            d: <>Stasiun tepi jalan memuncak <b>07–09 dan 17–19</b>. Akhir pekan nyaris sama dengan hari kerja (selisih median &lt; 0,1%), jadi pembatasan kendaraan akhir pekan saja kurang berdampak.</> },
           { t: "Industri Kotor Sepanjang Tahun, Gambut Hanya Saat Musim", view: "nasional", values: mean, tinggi: "rata-rata 2024–2026", labels: ["JKT-02", "KTG-01", "JKT-01", "IDP-01"],
-            d: <>Rata-rata 2024–2026 (stasiun sah): {w.kawasan.map(([k, v], n) => <span key={k}>{n ? " · " : ""}{KAWASAN_LABEL[k] ?? k} <b>{fmt(v)}</b></span>)} {UG}. Bedanya di pola: Marunda tidak pernah sehat tetapi tidak pernah ekstrem ({fmt(w.marunda[0], 0)}–{fmt(w.marunda[1], 0)}); Palangka Raya hanya Sedang di Januari–Juni (±{fmt(w.pkyJanJun, 0)}), lalu meledak.</> },
+            d: <>Rata-rata 2024–2026 (stasiun sah): {w.kawasan.map(([k, v], n) => <span key={k}>{n ? " · " : ""}{KAWASAN_LABEL[k] ?? k} <b>{fmt(v)}</b></span>)} {UG}. Marunda tak pernah sehat tapi tak pernah ekstrem ({fmt(w.marunda[0], 0)}–{fmt(w.marunda[1], 0)}); Palangka Raya Sedang di Jan–Jun (±{fmt(w.pkyJanJun, 0)}), lalu meledak.</> },
         ];
       }
       case "/pemicu": {

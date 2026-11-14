@@ -96,7 +96,7 @@ export default function Q1Kondisi() {
           label: { show: blind && r.pm25 > 60, formatter: byCode[r.code].nama, position: "left", fontSize: 11, fontWeight: 700, color: C.ink, textBorderColor: "#fff", textBorderWidth: 3 } };
       }),
       markLine: { silent: true, symbol: "none", lineStyle: { type: "dashed", color: C.inkSoft }, label: { formatter: "35 (WHO IT-1)", position: "insideStartTop" }, data: [{ yAxis: 35 }] },
-      markArea: { silent: true, itemStyle: { color: "rgba(180,35,24,0.06)" }, label: { show: true, formatter: 'IKU "Baik", tetapi PM2.5 > 35', position: "insideTopLeft", color: C.alert, fontWeight: 700, fontSize: 11.5 }, data: [[{ xAxis: 70, yAxis: 35 }, { xAxis: 100, yAxis: 400 }]] },
+      markArea: { silent: true, itemStyle: { color: "rgba(180,35,24,0.06)" }, label: { show: true, formatter: 'IKU "Baik", tetapi PM2.5 > 35', position: "insideTopLeft", color: C.alert, fontWeight: 700, fontSize: 12 }, data: [[{ xAxis: 70, yAxis: 35 }, { xAxis: 100, yAxis: 400 }]] },
     }],
   };
 
@@ -108,7 +108,7 @@ export default function Q1Kondisi() {
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: (ps: any) => { const r = rank[ps[0].dataIndex]; return `<b>${byCode[r.code].nama}</b> · ${byCode[r.code].kelompok}<br/>Rata-rata 2025: <b>${fmt(r.rata2)}</b> ${UG}`; } },
     grid: { left: 8, right: 70, top: 26, bottom: 24 },
     xAxis: { type: "value", name: UG, nameLocation: "end" },
-    yAxis: { type: "category", data: rank.map((r) => byCode[r.code].nama), axisLabel: { fontSize: 11.5, color: C.ink }, axisTick: { show: false } },
+    yAxis: { type: "category", data: rank.map((r) => byCode[r.code].nama), axisLabel: { fontSize: 12, color: C.ink }, axisTick: { show: false } },
     series: [{
       type: "bar", barWidth: 12,
       data: rank.map((r) => {
@@ -137,7 +137,7 @@ export default function Q1Kondisi() {
           const on = filt(r.code), ring = pick(r.code), g = byCode[r.code].gambut;
           return { value: [r.rata2, y], code: r.code, symbol: sym(r.code) ?? "circle", symbolSize: ring ? 20 : 15,
             itemStyle: { color: !on ? MUTED : g ? C.gambut : C.focus, borderColor: ring ?? "#fff", borderWidth: ring ? 3 : 2, shadowBlur: 6, shadowColor: "rgba(0,0,0,.12)" },
-            label: { show: extremes.has(r.code) || !!ring, formatter: byCode[r.code].nama, position: "top", distance: 6, fontSize: 11.5, fontWeight: 700, color: C.ink, textBorderColor: "#fff", textBorderWidth: 3 } };
+            label: { show: extremes.has(r.code) || !!ring, formatter: byCode[r.code].nama, position: "top", distance: 6, fontSize: 12, fontWeight: 700, color: C.ink, textBorderColor: "#fff", textBorderWidth: 3 } };
         }),
         markLine: { silent: true, symbol: "none", animation: false,
           data: [
@@ -147,7 +147,7 @@ export default function Q1Kondisi() {
       },
       { type: "scatter", name: "Rata-rata pulau", symbol: "rect", symbolSize: [3, 26], silent: true, z: 1,
         data: rows.map((_, yi) => [pulauMean[yi], yi]), itemStyle: { color: C.ink, opacity: 0.55 },
-        label: { show: true, position: "bottom", distance: 4, formatter: (p: any) => `rata-rata ${fmt(p.value[0], 0)}`, fontSize: 10.5, color: C.inkSoft } },
+        label: { show: true, position: "bottom", distance: 4, formatter: (p: any) => `rata-rata ${fmt(p.value[0], 0)}`, fontSize: 11, color: C.inkSoft } },
     ],
   };
 
@@ -253,7 +253,7 @@ export default function Q1Kondisi() {
             tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, valueFormatter: (v: any) => fmtPct(v, 1, true) },
             grid: { left: 8, right: 30, top: 10, bottom: 20 },
             xAxis: { type: "value", name: "%" },
-            yAxis: { type: "category", axisLabel: { fontSize: 10.5 }, data: [...summ].filter((s) => s["ubah_%"] != null && !byCode[s.code].excl_tren).sort((x, y) => x["ubah_%"]! - y["ubah_%"]!).map((s) => byCode[s.code].nama) },
+            yAxis: { type: "category", axisLabel: { fontSize: 11 }, data: [...summ].filter((s) => s["ubah_%"] != null && !byCode[s.code].excl_tren).sort((x, y) => x["ubah_%"]! - y["ubah_%"]!).map((s) => byCode[s.code].nama) },
             series: [{ type: "bar", barWidth: 10, data: [...summ].filter((s) => s["ubah_%"] != null && !byCode[s.code].excl_tren).sort((x, y) => x["ubah_%"]! - y["ubah_%"]!).map((s) => ({ value: s["ubah_%"], itemStyle: { color: byCode[s.code].gambut ? GAMBUT_COL.Gambut : GAMBUT_COL["Non-gambut"], borderRadius: 3 } })) }],
           }} />
         </Card>,

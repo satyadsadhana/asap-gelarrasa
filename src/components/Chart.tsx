@@ -17,7 +17,7 @@ echarts.registerTheme("nn", {
   grid: { containLabel: true },
   categoryAxis: axis, valueAxis: axis, logAxis: axis, timeAxis: axis,
   legend: { textStyle: { color: UI.inkSoft, fontSize: 12 }, itemWidth: 14, itemHeight: 10 },
-  tooltip: { backgroundColor: "#ffffff", borderColor: UI.line, textStyle: { color: UI.ink, fontSize: 12.5 }, extraCssText: "box-shadow:0 6px 20px rgba(0,0,0,.12);border-radius:8px;" },
+  tooltip: { backgroundColor: "#ffffff", borderColor: UI.line, textStyle: { color: UI.ink, fontSize: 13 }, extraCssText: "box-shadow:0 6px 20px rgba(0,0,0,.12);border-radius:8px;" },
   markLine: { label: { color: UI.inkSoft, fontSize: 11 } },
 });
 

@@ -362,7 +362,7 @@ function Detail({ s, terbit, batas, jejak }: { s: Tampil; terbit: string; batas:
           ? `Prakiraan H+${f.h}: <b>${fmt(f.nilai, 0)}</b> ${UG}<br/>Rentang 80%: ${fmt(f.lo, 0)}–${fmt(f.hi, 0)}${f.akt != null ? `<br/>Yang terjadi: <b>${fmt(f.akt, 0)}</b>` : ""}`
           : `Terukur: <b>${ukur[i] == null ? "tidak ada data" : `${fmt(ukur[i]!, 0)} ${UG}`}</b>${lalu1[i] != null ? `<br/>Diramal sehari sebelumnya: ${fmt(lalu1[i]!, 0)}` : ""}`);
       } },
-      legend: { bottom: 0, data: ["Terukur", ...(adaJejak ? ["Diramal sehari sebelumnya"] : []), "Prakiraan", "Rentang 80%", ...(adaAkt ? ["Yang terjadi"] : [])], textStyle: { fontSize: 11.5 } },
+      legend: { bottom: 0, data: ["Terukur", ...(adaJejak ? ["Diramal sehari sebelumnya"] : []), "Prakiraan", "Rentang 80%", ...(adaAkt ? ["Yang terjadi"] : [])], textStyle: { fontSize: 12 } },
       grid: { left: 8, right: 18, top: 24, bottom: 40, containLabel: true },
       xAxis: { type: "category", data: x, boundaryGap: false, axisLabel: { formatter: (v: string) => pendek(v), fontSize: 11, interval: 6 } },
       yAxis: { type: "value", name: UG, min: 0 },
@@ -519,14 +519,14 @@ function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih, beku
         return `<b>${label(m.code)} · musim ${y}</b><br/>${pendek(t.mulai)} – ${pendek(t.akhir)}${t.berlanjut ? " (masih berlangsung)" : ""}<br/>${t.hari} hari di atas 55 · rata-rata ${fmt(t.rata, 0)} ${UG}`;
       } },
       grid: { left: 8, right: sempit ? 10 : 122, top: 46, bottom: 26, containLabel: true },
-      graphic: sempit ? [] : [{ type: "text", right: 8, top: 24, style: { text: "rata-rata 2025 → 2026", fontSize: 10.5, fontWeight: 600, fill: "#8a979c", align: "right" } }],
+      graphic: sempit ? [] : [{ type: "text", right: 8, top: 24, style: { text: "rata-rata 2025 → 2026", fontSize: 11, fontWeight: 600, fill: "#8a979c", align: "right" } }],
       xAxis: { type: "time", min: x0, max: x1, position: "top", axisLine: { show: false }, axisTick: { show: false }, splitNumber: 6,
         splitLine: { show: true, lineStyle: { color: "#eef2f3" } },
         axisLabel: { fontSize: 11, fontWeight: 650, color: C.ink, formatter: (v: number) => BULAN[new Date(v + 12 * 36e5).getMonth()] } },
       yAxis: [
         { type: "category", inverse: true, data: st.map((m) => label(m.code)), axisTick: { show: false }, axisLine: { show: false },
           axisLabel: { fontSize: sempit ? 10.5 : 12, color: C.ink, formatter: (v: string, i: number) => `${st[i] && beku.has(st[i].code) ? "{f|data beku} " : ""}${st[i]?.code === kode ? `{b|${v}}` : v}`,
-            rich: { b: { fontWeight: 800, color: TEAL_INK, fontSize: 12 }, f: { color: "#8a3b12", backgroundColor: "#fde3cf", borderRadius: 4, padding: [2, 5], fontSize: 9.5, fontWeight: 750 } } } },
+            rich: { b: { fontWeight: 800, color: TEAL_INK, fontSize: 12 }, f: { color: "#8a3b12", backgroundColor: "#fde3cf", borderRadius: 4, padding: [2, 5], fontSize: 11, fontWeight: 750 } } } },
         { type: "category", inverse: true, position: "right", data: st.map((_m, i) => `${i}`), axisTick: { show: false }, axisLine: { show: false },
           axisLabel: { show: !sempit, formatter: (v: string) => {
             const m = st[+v], a = m.tahun["2025"]?.rata, b = m.tahun["2026"]?.rata, u = ubah(m);
@@ -534,11 +534,11 @@ function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih, beku
             if (a == null) return `{baru|baru} {b|${fmt(b, 0)}}`;
             return `{a|${fmt(a, 0)}}{p|→}{b|${fmt(b, 0)}}${u != null && Math.abs(u) >= 0.05 ? `{${u > 0 ? "up" : "dn"}|${u > 0 ? "▲" : "▼"}${fmt(Math.abs(u) * 100, 0)}%}` : "{eq|sama}"}`;
           }, rich: {
-            a: { color: "#8a979c", fontSize: 11, fontFamily: "var(--font-num)", width: 24, align: "right" }, p: { color: "#b9c4c8", fontSize: 10, padding: [0, 3] },
-            b: { color: C.ink, fontSize: 12.5, fontWeight: 800, fontFamily: "var(--font-num)", width: 28, align: "right" },
-            up: { color: RAMP[5], fontSize: 10.5, fontWeight: 750, padding: [0, 0, 0, 5] }, dn: { color: TEAL_INK, fontSize: 10.5, fontWeight: 750, padding: [0, 0, 0, 5] },
-            eq: { color: "#8a979c", fontSize: 10.5, padding: [0, 0, 0, 5] },
-            baru: { color: "#fff", backgroundColor: RAMP[5], borderRadius: 4, padding: [2, 5], fontSize: 10, fontWeight: 750 } } } },
+            a: { color: "#8a979c", fontSize: 11, fontFamily: "var(--font-num)", width: 24, align: "right" }, p: { color: "#b9c4c8", fontSize: 11, padding: [0, 3] },
+            b: { color: C.ink, fontSize: 13, fontWeight: 800, fontFamily: "var(--font-num)", width: 28, align: "right" },
+            up: { color: RAMP[5], fontSize: 11, fontWeight: 750, padding: [0, 0, 0, 5] }, dn: { color: TEAL_INK, fontSize: 11, fontWeight: 750, padding: [0, 0, 0, 5] },
+            eq: { color: "#8a979c", fontSize: 11, padding: [0, 0, 0, 5] },
+            baru: { color: "#fff", backgroundColor: RAMP[5], borderRadius: 4, padding: [2, 5], fontSize: 11, fontWeight: 750 } } } },
       ] as any,
       series: [{ type: "custom", data, encode: { x: [0, 1], y: 2 }, z: 3,
         renderItem: (_p: any, api: any) => {
@@ -560,8 +560,8 @@ function Linimasa({ st, label, terbit, akhirLalu, akhirUmum, kode, onPilih, beku
         markArea: akhir && akhir > kini ? { silent: true, itemStyle: { color: "rgba(232,93,4,0.07)" }, label: { show: false },
           data: [[{ xAxis: kini }, { xAxis: akhir }]] } : undefined,
         markLine: { silent: true, symbol: "none", data: [
-          { xAxis: kini, lineStyle: { color: C.ink, type: "solid", width: 1.2 }, label: { formatter: `kini ${pendek(terbit)}`, position: "start", distance: 4, fontSize: 10.5, fontWeight: 700, color: C.ink } },
-          ...(akhir ? [{ xAxis: akhir, lineStyle: { color: RAMP[5], type: "dashed", width: 1.4 }, label: { formatter: `turun ${pendek(addDays(geser(akhirUmum!), 1))} (2024–2025)`, position: "end", fontSize: 10.5, fontWeight: 800, color: RAMP[5] } }] : []),
+          { xAxis: kini, lineStyle: { color: C.ink, type: "solid", width: 1.2 }, label: { formatter: `kini ${pendek(terbit)}`, position: "start", distance: 4, fontSize: 11, fontWeight: 700, color: C.ink } },
+          ...(akhir ? [{ xAxis: akhir, lineStyle: { color: RAMP[5], type: "dashed", width: 1.4 }, label: { formatter: `turun ${pendek(addDays(geser(akhirUmum!), 1))} (2024–2025)`, position: "end", fontSize: 11, fontWeight: 800, color: RAMP[5] } }] : []),
         ] } } as any],
     };
   }, [st, label, terbit, kode, sempit, akhirLalu, akhir, kini, akhirUmum, beku]);
@@ -580,12 +580,12 @@ function KasusRS({ r, terbit }: { r: V6["kasus"]["rs"][number]; terbit: string }
       tooltip: { trigger: "axis", valueFormatter: (v: any) => (v == null ? "–" : `${fmt(v, 0)} kasus`) },
       legend: { bottom: 0, data: ["Tercatat", "Perkiraan"], textStyle: { fontSize: 11 } },
       grid: { left: 6, right: 10, top: 16, bottom: 34, containLabel: true },
-      xAxis: { type: "category", data: x, axisLabel: { formatter: (v: string) => pendek(v), fontSize: 10.5, interval: 6 } },
+      xAxis: { type: "category", data: x, axisLabel: { formatter: (v: string) => pendek(v), fontSize: 11, interval: 6 } },
       yAxis: { type: "value", name: "kasus/hari", min: 0 },
       series: [
         { name: "Tercatat", type: "bar", data: [...r.riwayat, ...pad(7)], itemStyle: { color: GREY, borderRadius: [3, 3, 0, 0] }, barCategoryGap: "25%" },
         { name: "Perkiraan", type: "bar", data: [...pad(n), ...r.hari.map((h) => h.kasus)], itemStyle: { color: TEAL, borderRadius: [3, 3, 0, 0] },
-          markLine: { silent: true, symbol: "none", lineStyle: { color: TEAL_INK, type: "dashed" }, label: { formatter: `rata-rata 7 hari lalu ${fmt(r.rata7, 0)}`, position: "insideStartTop", fontSize: 10.5, color: TEAL_INK }, data: [{ yAxis: r.rata7 }] } },
+          markLine: { silent: true, symbol: "none", lineStyle: { color: TEAL_INK, type: "dashed" }, label: { formatter: `rata-rata 7 hari lalu ${fmt(r.rata7, 0)}`, position: "insideStartTop", fontSize: 11, color: TEAL_INK }, data: [{ yAxis: r.rata7 }] } },
       ] as any,
     };
   }, [r, terbit]);
@@ -599,8 +599,8 @@ function ujiOpt(Q: Kualitas[], nama: (c: string) => string): EChartsOption {
     tooltip: { formatter: (q: any) => `<b>${q.name}</b><br/>Galat besok ${fmt(q.value, 0)}% lebih kecil dari menyalin` },
     grid: { left: 8, right: 24, top: 10, bottom: 30, containLabel: true },
     xAxis: { type: "value", min: (v: any) => Math.min(-5, Math.floor(v.min / 5) * 5), name: "% galat lebih kecil (besok)", nameLocation: "middle", nameGap: 22, axisLabel: { formatter: (v: number) => `${v}%` } },
-    yAxis: { type: "category", data: rows.map((q) => nama(q.code)), axisTick: { show: false }, axisLabel: { fontSize: 10.5, color: C.ink } },
+    yAxis: { type: "category", data: rows.map((q) => nama(q.code)), axisTick: { show: false }, axisLabel: { fontSize: 11, color: C.ink } },
     series: [{ type: "scatter", data: rows.map((q, i) => ({ value: +((q.skill_h1 ?? 0) * 100).toFixed(1), label: { show: i === 0 || i === rows.length - 1, position: "right", formatter: (v: any) => `${fmt(v.value, 0)}%`, fontSize: 11, fontWeight: 700, color: TEAL_INK } })), symbolSize: 10, itemStyle: { color: TEAL_INK, borderColor: "#fff", borderWidth: 1.5 },
-      markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "solid", width: 1 }, label: { formatter: "sama dengan menyalin", position: "insideEndTop", fontSize: 10.5 }, data: [{ xAxis: 0 }] } }] as any,
+      markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: "solid", width: 1 }, label: { formatter: "sama dengan menyalin", position: "insideEndTop", fontSize: 11 }, data: [{ xAxis: 0 }] } }] as any,
   };
 }

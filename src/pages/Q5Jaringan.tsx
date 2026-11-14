@@ -62,7 +62,7 @@ export default function Q5Jaringan() {
     series: [{
       type: "scatter", symbolSize: 12,
       data: prio.map((r) => ({ value: [r["hari_valid_%"], r.skor_risiko], code: r.code, itemStyle: { color: KAT_COL[r.kategori], borderColor: pick(r.code) ?? "#fff", borderWidth: pick(r.code) ? 3 : 1 },
-        label: { show: r.kategori !== "Andal", formatter: r.code, position: "right", fontSize: 10, fontWeight: 700 } })),
+        label: { show: r.kategori !== "Andal", formatter: r.code, position: "right", fontSize: 11, fontWeight: 700 } })),
       markArea: { silent: true, itemStyle: { color: "rgba(180,35,24,0.06)", borderColor: "rgba(180,35,24,0.35)", borderWidth: 1 }, label: { show: true, position: "insideTopLeft", formatter: "Prioritas", color: C.alert, fontWeight: 700, fontSize: 11 },
         data: [[{ xAxis: 60, yAxis: 50 }, { xAxis: 90, yAxis: 100 }]] },
     }],
@@ -84,7 +84,7 @@ export default function Q5Jaringan() {
     legend: { top: 0, data: ["Andal", "Diakui metadata", "Tersembunyi"] },
     grid: { left: 8, right: 64, top: 30, bottom: 20 },
     xAxis: { type: "value", max: 100, axisLabel: { formatter: "{value}%" } },
-    yAxis: { type: "category", inverse: true, data: cov.map((r) => byCode[r.code].nama), axisLabel: { fontSize: 11.5, color: C.ink }, axisTick: { show: false } },
+    yAxis: { type: "category", inverse: true, data: cov.map((r) => byCode[r.code].nama), axisLabel: { fontSize: 12, color: C.ink }, axisTick: { show: false } },
     series: Object.entries(KAT_LAB).map(([k, lab]) => ({
       name: lab, type: "bar" as const, stack: "a", barWidth: 12, itemStyle: { color: KAT_COL[k], borderRadius: [0, 4, 4, 0] },
       data: cov.map((r) => (r.kategori === k ? { value: r["hari_valid_%"], code: r.code } : null)),
@@ -144,7 +144,7 @@ export default function Q5Jaringan() {
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.code} className="click" onClick={() => openProfil(r.code)}>
-                    <td style={{ minWidth: 130 }}><b style={{ color: pick(r.code) ?? undefined }}>{byCode[r.code].nama}</b><br /><span style={{ color: "var(--ink-soft)", fontSize: 11.5 }}>{r.code} · {byCode[r.code].provinsi}<br />status: {r.status_metadata}</span></td>
+                    <td style={{ minWidth: 130 }}><b>{pick(r.code) && <i aria-hidden style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: pick(r.code)!, marginRight: 6 }} />}{byCode[r.code].nama}</b><br /><span style={{ color: "var(--ink-soft)", fontSize: 12 }}>{r.code} · {byCode[r.code].provinsi}<br />status: {r.status_metadata}</span></td>
                     <td><span className="grade" style={{ background: GRADE_STYLE[r.grade].bg, color: GRADE_STYLE[r.grade].fg }}>{r.grade}</span></td>
                     <td className="num">{fmt(r["hari_valid_%"], 1)}%</td>
                     <td className="num">{fmt(r["imputasi_%"], 1)}%</td>

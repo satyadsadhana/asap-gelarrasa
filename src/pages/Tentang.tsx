@@ -35,7 +35,7 @@ export default function Tentang() {
       <div className="grid-sup">
         <section className="card" style={{ gridColumn: "span 2" }}>
           <h2>Alur Pembersihan</h2>
-          <ol style={{ paddingLeft: 18, marginTop: 10 }}>{STEPS.map(([a, b]) => <li key={a} style={{ fontSize: 13.5, marginBottom: 6 }}><b>{a}:</b> {b}</li>)}</ol>
+          <ol style={{ paddingLeft: 18, marginTop: 10 }}>{STEPS.map(([a, b]) => <li key={a} style={{ fontSize: 13, marginBottom: 6 }}><b>{a}:</b> {b}</li>)}</ol>
           <p className="note">JMB-02 rusak total dan dikeluarkan dari analisis polutan; MER-01 hanya punya ±10 hari sah sehingga dikeluarkan dari statistik per stasiun.</p>
         </section>
         <section className="card">
